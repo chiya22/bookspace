@@ -25,8 +25,7 @@ export default async function AdminUserEditPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-zinc-900">利用者編集</h1>
-      <p className="mt-2 text-sm text-zinc-600">
+      <p className="text-sm text-zinc-600">
         <Link href="/admin/users" className="text-zinc-600 underline hover:text-zinc-900">
           利用者管理
         </Link>

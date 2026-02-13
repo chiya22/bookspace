@@ -8,7 +8,6 @@ export function RegisterForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4 rounded-lg bg-white p-6 shadow">
-      <h1 className="text-xl font-semibold text-zinc-900">会員登録</h1>
       {state?.error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>
       )}
@@ -19,7 +18,7 @@ export function RegisterForm() {
           type="email"
           autoComplete="email"
           required
-          className="rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -30,7 +29,7 @@ export function RegisterForm() {
           autoComplete="new-password"
           required
           minLength={8}
-          className="rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -40,7 +39,7 @@ export function RegisterForm() {
           type="text"
           autoComplete="name"
           required
-          className="rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -50,14 +49,14 @@ export function RegisterForm() {
           type="text"
           autoComplete="nickname"
           placeholder="未入力の場合は名前が使われます"
-          className="rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
       <button
         type="submit"
-        className="rounded bg-zinc-900 py-2 font-medium text-white hover:bg-zinc-800"
+        className="w-full rounded-full bg-zinc-900 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
       >
-        登録する
+        新規登録
       </button>
       <p className="text-center text-sm text-zinc-600">
         すでにアカウントをお持ちの方は{' '}

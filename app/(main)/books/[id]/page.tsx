@@ -53,17 +53,22 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <Link href="/books" className="text-zinc-600 underline hover:text-zinc-900">
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          href="/books"
+          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm transition hover:border-emerald-500/50 hover:text-emerald-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 focus-visible:ring-offset-1"
+        >
+          <span className="text-xs" aria-hidden>←</span>
           蔵書検索へ戻る
         </Link>
         {isStaff && (
-          <>
-            <span className="text-zinc-400">|</span>
-            <Link href="/admin/books" className="text-zinc-600 underline hover:text-zinc-900">
-              蔵書管理へ戻る
-            </Link>
-          </>
+          <Link
+            href="/admin/books"
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm transition hover:border-emerald-500/50 hover:text-emerald-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 focus-visible:ring-offset-1"
+          >
+            <span className="text-xs" aria-hidden>←</span>
+            蔵書管理へ戻る
+          </Link>
         )}
       </div>
       <div className="flex gap-6 rounded-lg border border-zinc-200 bg-white p-6">
@@ -96,11 +101,11 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
           {tags.length > 0 && (
             <div>
               <dt className="font-medium text-zinc-500">タグ</dt>
-              <dd className="mt-1 flex flex-wrap gap-2">
+              <dd className="mt-1 flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700"
+                    className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-800"
                   >
                     {tag.name}
                   </span>

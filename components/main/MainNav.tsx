@@ -1,73 +1,196 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 type MainNavProps = {
   name: string | null;
   role: string;
 };
 
+const navLinks = [
+  { href: '/books', label: '蔵書検索' },
+  { href: '/loans', label: '貸出履歴' },
+  { href: '/account', label: 'アカウント' },
+] as const;
+
+const staffLinks = [
+  { href: '/reception/loan', label: '貸出', isAdmin: false },
+  { href: '/reception/return', label: '返却', isAdmin: false },
+  { href: '/reception/loans', label: '貸出履歴一覧', isAdmin: false },
+  { href: '/admin', label: '管理', isAdmin: true },
+] as const;
+
 export function MainNav({ name, role }: MainNavProps) {
   const isStaff = role === 'librarian' || role === 'admin';
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('click', handleClickOutside, true);
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [menuOpen]);
+
+  const linkClass = (href: string, isAdmin?: boolean) =>
+    isAdmin
+      ? `block rounded-full px-3 py-2 text-sm font-medium hover:bg-emerald-700 ${
+          isActive(href) ? 'bg-emerald-600 text-white' : 'bg-emerald-800 text-white'
+        }`
+      : `block rounded px-3 py-2 text-sm hover:text-white ${
+          isActive(href) ? 'bg-emerald-700 text-white' : 'text-emerald-50/80 hover:bg-emerald-800/70'
+        }`;
 
   return (
-    <nav className="border-b border-zinc-200 bg-white" aria-label="メインメニュー">
-      <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="font-semibold text-zinc-900">
+    <nav
+      ref={navRef}
+      className="relative border-b border-emerald-900 bg-emerald-900/95 text-emerald-50 shadow-sm"
+      aria-label="メインメニュー"
+    >
+      <div className="mx-auto flex h-14 min-h-[3.5rem] max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-6 md:gap-8">
+          <Link
+            href="/"
+            className="shrink-0 text-base font-semibold tracking-wide text-emerald-50 sm:text-lg"
+          >
             ちよプラブックスペース
           </Link>
-          <Link href="/books" className="text-sm text-zinc-600 hover:text-zinc-900">
-            蔵書検索
-          </Link>
-          <Link href="/loans" className="text-sm text-zinc-600 hover:text-zinc-900">
-            貸出履歴
-          </Link>
-          <Link href="/account" className="text-sm text-zinc-600 hover:text-zinc-900">
-            アカウント
-          </Link>
-          {isStaff && (
-            <>
+
+          {/* デスクトップ: 横並びリンク */}
+          <div className="hidden flex-wrap items-center gap-1 md:flex">
+            {navLinks.map(({ href, label }) => (
               <Link
-                href="/reception/loan"
-                className="text-sm text-zinc-600 hover:text-zinc-900"
+                key={href}
+                href={href}
+                className={
+                  `rounded-full px-3 py-1 text-sm font-medium hover:bg-emerald-700 ${
+                    isActive(href) ? 'bg-emerald-600 text-white' : 'bg-emerald-800 text-white'
+                }`}
               >
-                貸出
+                {label}
               </Link>
-              <Link
-                href="/reception/return"
-                className="text-sm text-zinc-600 hover:text-zinc-900"
-              >
-                返却
-              </Link>
-              <Link
-                href="/reception/loans"
-                className="text-sm text-zinc-600 hover:text-zinc-900"
-              >
-                貸出履歴一覧
-              </Link>
-              <Link
-                href="/admin"
-                className="text-sm text-zinc-600 hover:text-zinc-900"
-              >
-                管理
-              </Link>
-            </>
-          )}
+            ))}
+            {isStaff &&
+              staffLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={
+                      `rounded-full px-3 py-1 text-sm font-medium hover:bg-emerald-700 ${
+                          isActive(href) ? 'bg-emerald-600 text-white' : 'bg-emerald-800 text-white'
+                        }`
+                  }
+                >
+                  {label}
+                </Link>
+              ))}
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-zinc-600">{name ?? ''}</span>
+
+        {/* デスクトップ: ユーザー名・ログアウト */}
+        <div className="hidden items-center gap-4 md:flex">
+          <span className="truncate text-sm text-emerald-50/70">{name ?? ''}</span>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="text-sm text-zinc-600 hover:text-zinc-900"
+            className="shrink-0 text-sm text-emerald-50/80 hover:text-white"
             aria-label="ログアウト"
           >
             ログアウト
           </button>
         </div>
+
+        {/* モバイル: ハンバーガー + ユーザー名 */}
+        <div className="flex items-center gap-2 md:hidden">
+          <span className="truncate text-xs text-emerald-50/70 sm:text-sm">{name ?? ''}</span>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-emerald-50 hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? 'メニューを閉じる' : 'メニューを開く'}
+          >
+            {menuOpen ? (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* モバイル: 開いたメニュー */}
+      {menuOpen && (
+        <div
+          className="absolute left-0 right-0 top-full z-50 border-t border-emerald-800 bg-emerald-900/98 shadow-lg md:hidden"
+          role="dialog"
+          aria-label="メニュー"
+        >
+          <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
+            <div className="flex flex-col gap-1">
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={linkClass(href)}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {label}
+                </Link>
+              ))}
+              {isStaff &&
+                staffLinks.map(({ href, label, isAdmin }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={linkClass(href, isAdmin)}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              <div className="mt-2 border-t border-emerald-800 pt-2">
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="w-full py-2 text-left text-sm text-emerald-50/80 hover:text-white"
+                >
+                  ログアウト
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

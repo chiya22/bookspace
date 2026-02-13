@@ -1,15 +1,26 @@
 import { getSession } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { qrCodeToDataUrl } from '@/lib/qr/toDataUrl';
+import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
+import { PaginationNav } from '@/components/PaginationNav';
+import { CoverImage } from '@/components/books/CoverImage';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'トップ | ちよプラブックスペース',
   description: '会員証QR・貸出中一覧',
 };
 
-export default async function TopPage() {
+type Props = { searchParams: Promise<{ page?: string }> };
+
+export default async function TopPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session?.user) return null;
+
+  const resolved = await searchParams;
+  const pageSize = getPageSize();
+  const page = parsePage(resolved);
 
   const supabase = createSupabaseServerClient();
   const { data: userData } = await supabase
@@ -27,7 +38,7 @@ export default async function TopPage() {
       `
       id,
       lent_at,
-      books ( id, title, author, isbn )
+      books ( id, title, author, isbn, cover_image_path )
     `
     )
     .eq('user_id', session.user.id)
@@ -37,9 +48,21 @@ export default async function TopPage() {
   type LoanWithBook = {
     id: string;
     lent_at: string;
-    books: { id: string; title: string; author: string; isbn: string } | null;
+    books: { id: string; title: string; author: string; isbn: string; cover_image_path: string | null } | null;
   };
-  const loans = (loansData ?? []) as LoanWithBook[];
+  const allLoans = (loansData ?? []) as LoanWithBook[];
+  const totalCount = allLoans.length;
+  const pagedLoans = sliceForPage(allLoans, page, pageSize);
+
+  const loansWithCovers = await Promise.all(
+    pagedLoans.map(async (loan) => {
+      const book = loan.books;
+      if (!book) return { ...loan, coverUrl: null as string | null };
+      const uploaded = await getCoverSignedUrl(book.cover_image_path);
+      const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
+      return { ...loan, coverUrl };
+    })
+  );
 
   const qrDataUrl =
     user?.qr_code_data != null ? await qrCodeToDataUrl(user.qr_code_data) : null;
@@ -64,9 +87,9 @@ export default async function TopPage() {
 
       <section>
         <h2 className="mb-3 text-sm font-medium text-zinc-700">現在貸出中の書籍</h2>
-        {loans.length > 0 ? (
+        {totalCount > 0 ? (
           <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white">
-            {loans.map((loan) => {
+            {loansWithCovers.map((loan) => {
               const book = loan.books;
               const lentAt = loan.lent_at
                 ? new Date(loan.lent_at).toLocaleDateString('ja-JP')
@@ -78,19 +101,45 @@ export default async function TopPage() {
                     )
                   : 0;
               return (
-                <li key={loan.id} className="px-4 py-3">
-                  <div className="font-medium text-zinc-900">{book?.title ?? '-'}</div>
-                  <div className="text-sm text-zinc-600">
-                    {book?.author}（貸出日: {lentAt}・{days}日目）
-                  </div>
+                <li key={loan.id}>
+                  <Link
+                    href={`/books/${book?.id ?? '#'}`}
+                    className="flex gap-3 px-4 py-2.5 transition hover:bg-zinc-50"
+                  >
+                    <div className="h-12 w-8 shrink-0 overflow-hidden rounded bg-zinc-100">
+                      <CoverImage
+                        src={loan.coverUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        width={32}
+                        height={48}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium text-zinc-900 line-clamp-2">
+                        {book?.title ?? '-'}
+                      </div>
+                      <div className="mt-0.5 text-[11px] text-zinc-600">
+                        {book?.author}（貸出日: {lentAt}・{days}日目）
+                      </div>
+                    </div>
+                  </Link>
                 </li>
               );
             })}
           </ul>
         ) : (
-          <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+          <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
             現在貸出中の書籍はありません。
           </p>
+        )}
+        {totalCount > 0 && (
+          <PaginationNav
+            totalCount={totalCount}
+            pageSize={pageSize}
+            currentPage={page}
+            basePath="/"
+          />
         )}
       </section>
     </div>

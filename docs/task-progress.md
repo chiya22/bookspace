@@ -65,9 +65,9 @@
 | No | タスク | 状態 | 優先度 | フェーズ | 備考 |
 |----|--------|------|--------|---------|------|
 | 5.1 | 利用者管理画面（一覧・編集・無効化等） | 完了 | 高 | 5 | /admin/users, /admin/users/[id]/edit。無効化は users.disabled |
-| 5.2 | 蔵書の棚卸機能（一覧・状態確認） | 完了 | 中 | 5 | /admin/inventory。蔵書一覧・在庫/貸出中・借受人表示 |
+| 5.2 | 蔵書の棚卸機能（在庫チェック・クリア・未チェック一覧） | 完了 | 中 | 5 | /admin/inventory。在庫チェック履歴のクリア、ISBNでチェック、未チェック一覧・最終クリア日時表示。ページング対応 |
 | 5.3 | 貸出時・返却時のメール送信 | 完了 | 高 | 5 | lib/mail/send, registerLoan/registerReturn から送信・email_logs 記録 |
-| 5.4 | 管理者による返却依頼メール送信 | 完了 | 高 | 5 | lib/actions/return-request, 利用者一覧で「返却依頼メール」ボタン |
+| 5.4 | 管理者による返却依頼メール送信 | 完了 | 高 | 5 | 貸出履歴一覧（/reception/loans）から貸出1件ごとに送信。メール本文に書籍（タイトル・著者）・貸出日・貸出日数を含む |
 | 5.5 | メール送信基盤（Resend / SendGrid / SMTP 等） | 完了 | 高 | 5 | Resend。RESEND_API_KEY, MAIL_FROM で設定 |
 | 5.6 | メール送信履歴テーブル・保存処理（email_logs） | 完了 | 高 | 5 | sendEmailAndLog で送信成功時に email_logs に INSERT |
 

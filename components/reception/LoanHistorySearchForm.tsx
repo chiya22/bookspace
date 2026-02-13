@@ -1,7 +1,9 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTransition, useRef, useEffect } from 'react';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 type Props = {
   defaultValue: string;
@@ -10,12 +12,16 @@ type Props = {
 
 export function LoanHistorySearchForm({ defaultValue, currentFilter }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  function buildParamsAndNavigate(form: HTMLFormElement) {
     const q = (form.elements.namedItem('q') as HTMLInputElement).value.trim();
     const params = new URLSearchParams();
     if (currentFilter && currentFilter !== 'all') params.set('filter', currentFilter);
@@ -25,22 +31,32 @@ export function LoanHistorySearchForm({ defaultValue, currentFilter }: Props) {
     });
   }
 
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    buildParamsAndNavigate(e.currentTarget);
+  }
+
+  function onSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const form = e.currentTarget.form;
+    if (!form) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      buildParamsAndNavigate(form);
+    }, SEARCH_DEBOUNCE_MS);
+  }
+
   return (
-    <form onSubmit={onSubmit} className="flex gap-2">
+    <form onSubmit={onSubmit} className="min-w-0 flex-1 sm:min-w-[200px]">
       <input
         type="search"
         name="q"
         defaultValue={defaultValue}
         placeholder="利用者名・メール・書籍タイトル・著者で検索"
-        className="flex-1 rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+        onChange={onSearchInputChange}
+        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+        aria-label="利用者名・メール・書籍タイトル・著者で検索"
       />
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
-      >
-        {isPending ? '検索中...' : '検索'}
-      </button>
     </form>
   );
 }

@@ -32,43 +32,24 @@ export default async function AccountPage() {
   const roleLabel = roleLabels[session.user.role] ?? session.user.role;
 
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className="text-xl font-semibold text-zinc-900">アカウント情報</h1>
-
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-zinc-700">会員証（QRコード）</h2>
-        {qrDataUrl ? (
-          <div className="inline-block rounded-lg border border-zinc-200 bg-white p-4">
-            <img
-              src={qrDataUrl}
-              alt="会員証QRコード"
-              width={256}
-              height={256}
-              className="block"
-            />
-          </div>
-        ) : (
-          <p className="text-sm text-zinc-500">QRコードを生成中です。</p>
-        )}
-      </section>
-
+    <div className="flex flex-col gap-8 text-sm">
       <section className="rounded-lg border border-zinc-200 bg-white p-4">
-        <dl className="grid gap-3 text-sm">
+        <dl className="grid gap-3 text-[11px]">
           <div>
-            <dt className="font-medium text-zinc-500">名前</dt>
-            <dd className="text-zinc-900">{user?.name ?? '-'}</dd>
+            <dt className="text-xs text-zinc-500">名前</dt>
+            <dd className="text-sm text-zinc-900">{user?.name ?? '-'}</dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-500">表示名</dt>
-            <dd className="text-zinc-900">{displayName}</dd>
+            <dt className="text-xs text-zinc-500">表示名</dt>
+            <dd className="text-sm text-zinc-900">{displayName}</dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-500">メール</dt>
-            <dd className="text-zinc-900">{user?.email ?? '-'}</dd>
+            <dt className="text-xs text-zinc-500">メール</dt>
+            <dd className="text-sm text-zinc-900">{user?.email ?? '-'}</dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-500">役割</dt>
-            <dd className="text-zinc-900">{roleLabel}</dd>
+            <dt className="text-xs text-zinc-500">役割</dt>
+            <dd className="text-sm text-zinc-900">{roleLabel}</dd>
           </div>
         </dl>
         <AccountDisplayNameForm currentDisplayName={user?.display_name ?? ''} />

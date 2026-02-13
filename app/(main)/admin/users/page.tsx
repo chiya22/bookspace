@@ -1,7 +1,8 @@
 import { getSession } from '@/lib/auth';
-import { getAllUsers } from '@/lib/users/queries';
+import { getUsersPaginated } from '@/lib/users/queries';
+import { getPageSize, parsePage } from '@/lib/pagination';
+import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
-import { ReturnRequestButton } from './ReturnRequestButton';
 
 export const metadata = {
   title: '利用者管理 | ちよプラブックスペース',
@@ -13,19 +14,23 @@ const roleLabels: Record<string, string> = {
   admin: '管理者',
 };
 
-export default async function AdminUsersPage() {
+type Props = { searchParams: Promise<{ page?: string }> };
+
+export default async function AdminUsersPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session?.user || (session.user.role !== 'librarian' && session.user.role !== 'admin')) {
     return null;
   }
 
-  const users = await getAllUsers();
+  const resolved = await searchParams;
+  const pageSize = getPageSize();
+  const page = parsePage(resolved);
+  const { users, totalCount } = await getUsersPaginated(page, pageSize);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-zinc-900">利用者管理</h1>
-      <p className="mt-2 text-sm text-zinc-600">
-        利用者の一覧です。編集・無効化・返却依頼メールの送信ができます。
+      <p className="text-sm text-zinc-600">
+        利用者の一覧です。編集・無効化ができます。
       </p>
       <div className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[600px] border-collapse rounded-lg border border-zinc-200 bg-white text-sm">
@@ -56,24 +61,31 @@ export default async function AdminUsersPage() {
                   )}
                 </td>
                 <td className="px-4 py-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/admin/users/${user.id}/edit`}
-                      className="text-zinc-700 underline hover:text-zinc-900"
-                    >
-                      編集
-                    </Link>
-                    <ReturnRequestButton userId={user.id} userName={user.name} />
-                  </div>
+                  <Link
+                    href={`/admin/users/${user.id}/edit`}
+                    className="inline-flex items-center rounded-full border border-zinc-200 px-2 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/60 hover:text-emerald-800"
+                  >
+                    編集
+                  </Link>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <PaginationNav
+        totalCount={totalCount}
+        pageSize={pageSize}
+        currentPage={page}
+        basePath="/admin/users"
+      />
       <p className="mt-4 text-sm">
-        <Link href="/admin" className="text-zinc-600 underline hover:text-zinc-900">
-          管理メニューへ戻る
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/50 hover:text-emerald-800 hover:shadow-md"
+        >
+          <span className="text-xs">←</span>
+          <span>管理メニューへ戻る</span>
         </Link>
       </p>
     </div>

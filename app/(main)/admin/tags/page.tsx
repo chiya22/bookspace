@@ -1,5 +1,7 @@
 import { getSession } from '@/lib/auth';
-import { getAllTags } from '@/lib/tags/queries';
+import { getTagsPaginated } from '@/lib/tags/queries';
+import { getPageSize, parsePage } from '@/lib/pagination';
+import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
 import { deleteTag } from '@/lib/actions/tags';
 import { TagCreateForm } from './TagCreateForm';
@@ -9,23 +11,26 @@ export const metadata = {
   title: 'タグ管理 | ちよプラブックスペース',
 };
 
-export default async function AdminTagsPage() {
+type Props = { searchParams: Promise<{ page?: string }> };
+
+export default async function AdminTagsPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session?.user || (session.user.role !== 'librarian' && session.user.role !== 'admin')) {
     return null;
   }
 
-  const tags = await getAllTags();
+  const resolved = await searchParams;
+  const pageSize = getPageSize();
+  const page = parsePage(resolved);
+  const { tags, totalCount } = await getTagsPaginated(page, pageSize);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-zinc-900">タグ管理</h1>
-      <p className="mt-2 text-sm text-zinc-600">
+      <p className="text-sm text-zinc-600">
         タグの追加・名前変更・削除ができます。書籍編集画面でタグの付与・解除ができます。
       </p>
 
       <section className="mt-6">
-        <h2 className="mb-2 text-sm font-medium text-zinc-700">新規タグを追加</h2>
         <TagCreateForm />
       </section>
 
@@ -36,14 +41,14 @@ export default async function AdminTagsPage() {
             タグがまだありません。上記フォームから追加するか、書籍編集画面でタグを付与するとここに表示されます。
           </p>
         ) : (
-          <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white">
+          <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white text-sm">
             {tags.map((tag) => (
               <li key={tag.id} className="flex items-center justify-between gap-4 px-4 py-3">
-                <span className="text-zinc-900">{tag.name}</span>
-                <span className="flex shrink-0 gap-3">
+                <span className="text-[13px] font-semibold text-zinc-900">{tag.name}</span>
+                <span className="flex shrink-0 gap-2 text-[11px]">
                   <Link
                     href={`/admin/tags/${tag.id}/edit`}
-                    className="text-sm text-zinc-600 underline hover:text-zinc-900"
+                    className="inline-flex items-center rounded-full border border-zinc-200 px-2 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/60 hover:text-emerald-800"
                   >
                     名前を変更
                   </Link>
@@ -53,10 +58,22 @@ export default async function AdminTagsPage() {
             ))}
           </ul>
         )}
+        {totalCount > 0 && (
+          <PaginationNav
+            totalCount={totalCount}
+            pageSize={pageSize}
+            currentPage={page}
+            basePath="/admin/tags"
+          />
+        )}
       </section>
       <p className="mt-4 text-sm">
-        <Link href="/admin" className="text-zinc-600 underline hover:text-zinc-900">
-          管理メニューへ戻る
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/50 hover:text-emerald-800 hover:shadow-md"
+        >
+          <span className="text-xs">←</span>
+          <span>管理メニューへ戻る</span>
         </Link>
       </p>
     </div>

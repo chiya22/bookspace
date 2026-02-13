@@ -43,3 +43,42 @@ export async function getBooksWithLoanStatus(): Promise<BookInventoryRow[]> {
     };
   });
 }
+
+/**
+ * 在庫チェック済みの book_id 一覧を取得。
+ */
+export async function getCheckedBookIds(): Promise<Set<string>> {
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase.from('inventory_checks').select('book_id');
+  const set = new Set<string>();
+  for (const row of data ?? []) {
+    set.add((row as { book_id: string }).book_id);
+  }
+  return set;
+}
+
+/**
+ * 在庫チェック履歴を最後にクリアした日時（1件のみ、直近）。
+ */
+export async function getLastInventoryClearedAt(): Promise<Date | null> {
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from('inventory_clear_history')
+    .select('cleared_at')
+    .order('cleared_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const row = data as { cleared_at: string } | null;
+  return row?.cleared_at ? new Date(row.cleared_at) : null;
+}
+
+/**
+ * 在庫チェック履歴が存在しない書籍（未チェック）の一覧を取得。
+ */
+export async function getBooksNotChecked(): Promise<BookInventoryRow[]> {
+  const [allBooks, checkedIds] = await Promise.all([
+    getBooksWithLoanStatus(),
+    getCheckedBookIds(),
+  ]);
+  return allBooks.filter((b) => !checkedIds.has(b.id));
+}

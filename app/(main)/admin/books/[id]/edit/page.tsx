@@ -34,7 +34,6 @@ export default async function AdminBooksEditPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold text-zinc-900">蔵書編集</h1>
       <BookForm
         mode="edit"
         book={book}

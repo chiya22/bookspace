@@ -12,15 +12,19 @@
 users (利用者・NextAuth で照合)
   ├── パスワードハッシュもこのテーブルに保持
   ├── 会員証QR用データ (qr_code_data)
+  ├── 表示名 (display_name)。未設定時は name を表示に使用
   ├── 無効化フラグ (disabled)。true の場合はログイン不可
   ├── 1:N 貸出履歴 (loans)
-  └── N:M お気に入り (user_favorites)
+  ├── N:M お気に入り (user_favorites)
+  └── 1:N 書籍コメント (book_comments)
 
 books (書籍・書誌)
   ├── 表紙画像は Supabase Storage、books.cover_image_path 等で参照
   ├── 1:N 貸出履歴 (loans)
   ├── N:M タグ (book_tags → tags)
-  └── N:M お気に入り (user_favorites)
+  ├── N:M お気に入り (user_favorites)
+  ├── 1:N 書籍コメント (book_comments)
+  └── 1:N 棚卸チェック (inventory_checks)
 
 loans (貸出レコード)
   └── user_id, book_id, lent_at, returned_at（返却時のみ）
@@ -36,6 +40,15 @@ user_favorites (利用者お気に入り)
 
 email_logs (メール送信履歴)
   └── 送信のたびに1レコード。種別・宛先・送信日時等を記録
+
+book_comments (書籍コメント)
+  └── 利用者が書籍詳細で投稿。登録後の編集は不可
+
+inventory_checks (棚卸・在庫チェック済み)
+  └── book_id (PK), checked_at。クリア時は全件削除
+
+inventory_clear_history (棚卸・クリア日時)
+  └── 在庫チェック履歴をクリアした日時を記録。直近のクリア日時表示用
 ```
 
 ---
@@ -54,6 +67,7 @@ NextAuth の Credentials 認証で照合するため、**ユーザー情報は�
 | name | TEXT NOT NULL | 表示名・QRに含める |
 | role | TEXT NOT NULL | 'user' / 'librarian' / 'admin' |
 | qr_code_data | TEXT | QRに含めた文字列（例: JSON `{"userId":"...","name":"..."}`）または QR画像の Storage パス |
+| display_name | TEXT | 表示名。未設定時は name を表示に使用。アカウント画面で編集可能 |
 | disabled | BOOLEAN NOT NULL DEFAULT false | true の場合はログイン不可（無効化） |
 | created_at | TIMESTAMPTZ | |
 | updated_at | TIMESTAMPTZ | |
@@ -168,6 +182,42 @@ NextAuth の Credentials 認証で照合するため、**ユーザー情報は�
 | created_at | TIMESTAMPTZ | |
 
 - 送信失敗時も「送信試行」として記録する場合は、`status`（'sent' / 'failed'）や `error_message` を追加するとよい。
+
+---
+
+## 書籍コメント（book_comments）
+
+利用者が書籍詳細画面で投稿するコメント。登録後の編集は不可。
+
+| カラム（案） | 型 | 備考 |
+|-------------|-----|------|
+| id | UUID (PK) | |
+| book_id | UUID NOT NULL (FK → books) | |
+| user_id | UUID NOT NULL (FK → users) | 投稿者 |
+| body | TEXT NOT NULL | 本文 |
+| created_at | TIMESTAMPTZ | |
+
+---
+
+## 棚卸・在庫チェック（inventory_checks）
+
+棚卸で「在庫にある」とチェックした書籍を記録。在庫チェック履歴クリア時に全件削除する。
+
+| カラム（案） | 型 | 備考 |
+|-------------|-----|------|
+| book_id | UUID (PK, FK → books) | チェック済みの書籍 |
+| checked_at | TIMESTAMPTZ NOT NULL | チェック日時 |
+
+---
+
+## 棚卸・クリア履歴（inventory_clear_history）
+
+在庫チェック履歴をクリアした日時を記録。画面上で「最後にクリアした日時」を表示するために使用。
+
+| カラム（案） | 型 | 備考 |
+|-------------|-----|------|
+| id | UUID (PK) | |
+| cleared_at | TIMESTAMPTZ NOT NULL | クリア実行日時 |
 
 ---
 

@@ -4,7 +4,7 @@ export type LoanWithBook = {
   id: string;
   lent_at: string;
   returned_at: string | null;
-  books: { id: string; title: string; author: string; isbn: string } | null;
+  books: { id: string; title: string; author: string; isbn: string; cover_image_path: string | null } | null;
 };
 
 export type LoanWithBookAndUser = LoanWithBook & {
@@ -23,12 +23,43 @@ export async function getLoansByUserId(userId: string): Promise<LoanWithBook[]> 
       id,
       lent_at,
       returned_at,
-      books ( id, title, author, isbn )
+      books ( id, title, author, isbn, cover_image_path )
     `
     )
     .eq('user_id', userId)
     .order('lent_at', { ascending: false });
   return (data ?? []) as LoanWithBook[];
+}
+
+/**
+ * 指定利用者の貸出・返却履歴をページングで取得（貸出日降順）。
+ */
+export async function getLoansByUserIdPaginated(
+  userId: string,
+  page: number,
+  pageSize: number
+): Promise<{ loans: LoanWithBook[]; totalCount: number }> {
+  const supabase = createSupabaseServerClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, count } = await supabase
+    .from('loans')
+    .select(
+      `
+      id,
+      lent_at,
+      returned_at,
+      books ( id, title, author, isbn, cover_image_path )
+    `,
+      { count: 'exact' }
+    )
+    .eq('user_id', userId)
+    .order('lent_at', { ascending: false })
+    .range(from, to);
+  return {
+    loans: (data ?? []) as LoanWithBook[],
+    totalCount: count ?? 0,
+  };
 }
 
 export type LoanHistoryFilter = 'all' | 'active' | 'returned';
@@ -49,7 +80,7 @@ export async function getAllLoans(
       returned_at,
       user_id,
       book_id,
-      books ( id, title, author, isbn ),
+      books ( id, title, author, isbn, cover_image_path ),
       users ( id, name, email )
     `
     )

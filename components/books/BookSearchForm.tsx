@@ -1,7 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useTransition, useRef, useEffect } from 'react';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 type TagOption = { id: string; name: string };
 
@@ -28,12 +30,22 @@ export function BookSearchForm({
   defaultFavoritesOnly = false,
 }: Props) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const selectedSet = new Set(defaultTagIds);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  function buildParamsAndNavigate(form: HTMLFormElement) {
     const q = (form.elements.namedItem('q') as HTMLInputElement).value.trim();
     const tagInputs = form.querySelectorAll<HTMLInputElement>('input[name="tag"]:checked');
     const tagIds = Array.from(tagInputs).map((el) => el.value.trim()).filter(Boolean);
@@ -47,51 +59,80 @@ export function BookSearchForm({
     });
   }
 
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    buildParamsAndNavigate(e.currentTarget);
+  }
+
+  function onTagChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const form = e.currentTarget.form;
+    if (form) buildParamsAndNavigate(form);
+  }
+
+  function onFavChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const form = e.currentTarget.form;
+    if (form) buildParamsAndNavigate(form);
+  }
+
+  function onSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const form = e.currentTarget.form;
+    if (!form) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      buildParamsAndNavigate(form);
+    }, SEARCH_DEBOUNCE_MS);
+  }
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+      <div>
         <input
+          ref={inputRef}
           type="search"
           name="q"
           defaultValue={defaultValue}
           placeholder="タイトル・著者・出版社・ISBNで検索"
           autoFocus
-          className="flex-1 rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          onChange={onSearchInputChange}
+          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+          aria-label="タイトル・著者・出版社・ISBNで検索"
         />
-        <button
-          type="submit"
-          disabled={isPending}
-          className="shrink-0 rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
-        >
-          {isPending ? '検索中...' : '検索'}
-        </button>
       </div>
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-zinc-600">タグで絞り込み（複数選択可）:</span>
+          <span className="text-xs font-medium text-zinc-500">タグで絞り込み:</span>
           {allTags.map((tag) => (
-            <label key={tag.id} className="inline-flex cursor-pointer items-center gap-1.5">
+            <label key={tag.id} className="inline-flex cursor-pointer items-center">
               <input
                 type="checkbox"
                 name="tag"
                 value={tag.id}
                 defaultChecked={selectedSet.has(tag.id)}
-                className="h-4 w-4 rounded border-zinc-300"
+                onChange={onTagChange}
+                className="peer sr-only"
               />
-              <span className="text-sm text-zinc-800">{tag.name}</span>
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white/80 px-2 py-0.5 text-[11px] text-zinc-700 shadow-sm transition
+                  hover:border-emerald-500/40 hover:bg-white
+                  peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:text-emerald-800"
+              >
+                {tag.name}
+              </span>
             </label>
           ))}
         </div>
       )}
       {showFavoritesFilter && (
-        <label className="inline-flex cursor-pointer items-center gap-1.5">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs text-zinc-700">
           <input
             type="checkbox"
             name="fav"
             defaultChecked={defaultFavoritesOnly}
-            className="h-4 w-4 rounded border-zinc-300"
+            onChange={onFavChange}
+            className="h-3 w-3 rounded border-zinc-300"
           />
-          <span className="text-sm text-zinc-800">お気に入り登録している書籍のみ表示</span>
+          <span>お気に入り登録している書籍のみ表示</span>
         </label>
       )}
     </form>

@@ -8,8 +8,7 @@ export const metadata = {
 export default function ReceptionReturnPage() {
   return (
     <div>
-      <h1 className="text-xl font-semibold text-zinc-900">返却処理</h1>
-      <p className="mt-2 text-sm text-zinc-600">
+      <p className="text-sm text-zinc-600">
         ISBNと会員証QR（スキャン結果）を入力して返却を登録します。
       </p>
       <div className="mt-6">

@@ -8,6 +8,24 @@ export async function getAllTags(): Promise<TagRow[]> {
   return (data ?? []) as TagRow[];
 }
 
+export async function getTagsPaginated(
+  page: number,
+  pageSize: number
+): Promise<{ tags: TagRow[]; totalCount: number }> {
+  const supabase = createSupabaseServerClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, count } = await supabase
+    .from('tags')
+    .select('id, name', { count: 'exact' })
+    .order('name')
+    .range(from, to);
+  return {
+    tags: (data ?? []) as TagRow[],
+    totalCount: count ?? 0,
+  };
+}
+
 export async function getTagById(id: string): Promise<TagRow | null> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase.from('tags').select('id, name').eq('id', id).maybeSingle();

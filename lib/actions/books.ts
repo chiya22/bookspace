@@ -92,10 +92,15 @@ export async function updateBook(
   if (coverFile instanceof File && coverFile.size > 0) {
     const ext = getExtension(coverFile.name);
     const storagePath = `${id}${ext}`;
-    const { error: uploadError } = await supabase.storage.from(COVER_BUCKET).upload(storagePath, coverFile, {
-      upsert: true,
-      contentType: coverFile.type || 'image/jpeg',
-    });
+    // Next.js のサーバーアクション経由でも確実にアップロードできるよう、
+    // File からバイト配列に変換して渡す
+    const bytes = await coverFile.arrayBuffer();
+    const { error: uploadError } = await supabase.storage
+      .from(COVER_BUCKET)
+      .upload(storagePath, new Uint8Array(bytes), {
+        upsert: true,
+        contentType: coverFile.type || 'image/jpeg',
+      });
     if (uploadError) return { error: '表紙のアップロードに失敗しました。' };
     if (currentPath && currentPath !== storagePath) {
       await supabase.storage.from(COVER_BUCKET).remove([currentPath]);

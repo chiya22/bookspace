@@ -24,11 +24,15 @@ export default async function MainLayout({
   const displayName = row?.display_name ?? row?.name ?? session.user.name ?? '';
 
   return (
-    <>
+    <div className="min-h-screen bg-[color:var(--background)]">
       <MainNav name={displayName} role={session.user.role} />
-      <main id="main" className="mx-auto max-w-4xl px-4 py-6" tabIndex={-1}>
+      <main
+        id="main"
+        className="mx-auto min-w-0 max-w-5xl px-4 py-6 sm:px-6 sm:py-8"
+        tabIndex={-1}
+      >
         {children}
       </main>
-    </>
+    </div>
   );
 }

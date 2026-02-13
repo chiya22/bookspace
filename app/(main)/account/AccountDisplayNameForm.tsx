@@ -12,7 +12,6 @@ export function AccountDisplayNameForm({ currentDisplayName }: Props) {
 
   return (
     <form action={formAction} className="mt-4 border-t border-zinc-200 pt-4">
-      <h3 className="mb-2 text-sm font-medium text-zinc-700">表示名を変更</h3>
       {state?.error && (
         <p className="mb-2 rounded bg-red-50 px-2 py-1 text-sm text-red-800">{state.error}</p>
       )}
@@ -32,9 +31,9 @@ export function AccountDisplayNameForm({ currentDisplayName }: Props) {
         </label>
         <button
           type="submit"
-          className="shrink-0 rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+          className="shrink-0 rounded-full bg-emerald-700 px-4 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
         >
-          更新する
+          更新
         </button>
       </div>
     </form>

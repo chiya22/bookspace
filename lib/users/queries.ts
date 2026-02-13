@@ -19,6 +19,24 @@ export async function getAllUsers(): Promise<UserRow[]> {
   return (data ?? []) as UserRow[];
 }
 
+export async function getUsersPaginated(
+  page: number,
+  pageSize: number
+): Promise<{ users: UserRow[]; totalCount: number }> {
+  const supabase = createSupabaseServerClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, count } = await supabase
+    .from('users')
+    .select('id, email, name, role, disabled, created_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to);
+  return {
+    users: (data ?? []) as UserRow[],
+    totalCount: count ?? 0,
+  };
+}
+
 export async function getUserById(id: string): Promise<UserRow | null> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase

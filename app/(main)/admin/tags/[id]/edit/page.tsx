@@ -25,8 +25,7 @@ export default async function AdminTagEditPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-zinc-900">タグ名を変更</h1>
-      <p className="mt-2 text-sm text-zinc-600">
+      <p className="text-sm text-zinc-600">
         <Link href="/admin/tags" className="text-zinc-600 underline hover:text-zinc-900">
           タグ管理
         </Link>

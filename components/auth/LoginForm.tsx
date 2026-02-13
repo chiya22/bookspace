@@ -36,7 +36,6 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4 rounded-lg bg-white p-6 shadow">
-      <h1 className="text-xl font-semibold text-zinc-900">ログイン</h1>
       {registered === '1' && (
         <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-800">
           会員登録が完了しました。ログインしてください。
@@ -52,7 +51,7 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
-          className="rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -62,13 +61,13 @@ export function LoginForm() {
           type="password"
           autoComplete="current-password"
           required
-          className="rounded border border-zinc-300 px-3 py-2 text-zinc-900"
+          className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-zinc-900 py-2 font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+        className="w-full rounded-full bg-zinc-900 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
       >
         {loading ? 'ログイン中...' : 'ログイン'}
       </button>

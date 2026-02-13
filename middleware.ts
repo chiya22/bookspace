@@ -44,5 +44,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+  // 認証チェックの対象外: API・Next 内部・favicon・public の静的ファイル（ロゴなど）
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|company_logo\\.svg).*)'],
 };
