@@ -8,7 +8,7 @@ const resend = process.env.RESEND_API_KEY
   : null;
 const mailFrom = process.env.MAIL_FROM ?? 'ちよプラブックスペース <onboarding@resend.dev>';
 
-export type EmailKind = 'loan' | 'return' | 'return_request';
+export type EmailKind = 'loan' | 'return' | 'return_request' | 'password_reset';
 
 export type SendEmailResult = { ok: true; id?: string } | { ok: false; error: string };
 

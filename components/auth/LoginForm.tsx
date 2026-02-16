@@ -9,6 +9,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') ?? '/';
   const registered = searchParams.get('registered');
+  const reset = searchParams.get('reset');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -41,6 +42,11 @@ export function LoginForm() {
           会員登録が完了しました。ログインしてください。
         </p>
       )}
+      {reset === '1' && (
+        <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-800">
+          パスワードを変更しました。新しいパスワードでログインしてください。
+        </p>
+      )}
       {error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
       )}
@@ -71,6 +77,11 @@ export function LoginForm() {
       >
         {loading ? 'ログイン中...' : 'ログイン'}
       </button>
+      <p className="text-center text-sm text-zinc-600">
+        <a href="/login/forgot-password" className="font-medium text-zinc-900 underline">
+          パスワードを忘れた方
+        </a>
+      </p>
       <p className="text-center text-sm text-zinc-600">
         アカウントをお持ちでない方は{' '}
         <a href="/register" className="font-medium text-zinc-900 underline">
