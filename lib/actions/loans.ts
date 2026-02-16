@@ -71,10 +71,23 @@ export async function registerLoan(
 
   if (error) return { error: '貸出登録に失敗しました。' };
 
+  const loanBookLines = [
+    `${user.name} 様`,
+    '',
+    '以下の書籍の貸出が完了しました。',
+    '',
+    '【対象書籍】',
+    `　タイトル：${book.title}`,
+    `　著者：${book.author}`,
+    `　出版社：${book.publisher}`,
+    `　ISBN：${book.isbn}`,
+    '',
+    'ご利用ありがとうございます。',
+  ];
   await sendEmailAndLog({
     to: user.email,
-    subject: '【ちよプラブックスペース】貸出のご案内',
-    text: `${user.name} 様\n\n以下の書籍の貸出を登録しました。\n\nタイトル: ${book.title}\n著者: ${book.author}\n\nご利用ありがとうございます。`,
+    subject: '【ちよプラブックスペース】貸出完了のご案内',
+    text: loanBookLines.join('\n'),
     kind: 'loan',
     recipientUserId: userId,
   });
@@ -128,10 +141,23 @@ export async function registerReturn(
 
   if (error) return { error: '返却登録に失敗しました。' };
 
+  const returnBookLines = [
+    `${user.name} 様`,
+    '',
+    '以下の書籍の返却が完了しました。',
+    '',
+    '【対象書籍】',
+    `　タイトル：${book.title}`,
+    `　著者：${book.author}`,
+    `　出版社：${book.publisher}`,
+    `　ISBN：${book.isbn}`,
+    '',
+    'ご利用ありがとうございました。',
+  ];
   await sendEmailAndLog({
     to: user.email,
-    subject: '【ちよプラブックスペース】返却のご案内',
-    text: `${user.name} 様\n\n以下の書籍の返却を登録しました。\n\nタイトル: ${book.title}\n著者: ${book.author}\n\nご利用ありがとうございました。`,
+    subject: '【ちよプラブックスペース】返却完了のご案内',
+    text: returnBookLines.join('\n'),
     kind: 'return',
     recipientUserId: userId,
   });
