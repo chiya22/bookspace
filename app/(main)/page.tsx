@@ -23,49 +23,41 @@ export default async function TopPage({ searchParams }: Props) {
   const page = parsePage(resolved);
 
   const supabase = createSupabaseServerClient();
-  const { data: userData } = await supabase
-    .from('users')
-    .select('qr_code_data')
-    .eq('id', session.user.id)
-    .single();
+  const userId = session.user.id;
+
+  const [userResult, loansResult] = await Promise.all([
+    supabase.from('users').select('qr_code_data').eq('id', userId).single(),
+    supabase
+      .from('loans')
+      .select('id, lent_at, books ( id, title, author, isbn, cover_image_path )')
+      .eq('user_id', userId)
+      .is('returned_at', null)
+      .order('lent_at', { ascending: false }),
+  ]);
 
   type UserQrRow = { qr_code_data: string | null };
-  const user = userData as UserQrRow | null;
-
-  const { data: loansData } = await supabase
-    .from('loans')
-    .select(
-      `
-      id,
-      lent_at,
-      books ( id, title, author, isbn, cover_image_path )
-    `
-    )
-    .eq('user_id', session.user.id)
-    .is('returned_at', null)
-    .order('lent_at', { ascending: false });
-
   type LoanWithBook = {
     id: string;
     lent_at: string;
     books: { id: string; title: string; author: string; isbn: string; cover_image_path: string | null } | null;
   };
-  const allLoans = (loansData ?? []) as LoanWithBook[];
+  const user = userResult.data as UserQrRow | null;
+  const allLoans = (loansResult.data ?? []) as LoanWithBook[];
   const totalCount = allLoans.length;
   const pagedLoans = sliceForPage(allLoans, page, pageSize);
 
-  const loansWithCovers = await Promise.all(
-    pagedLoans.map(async (loan) => {
-      const book = loan.books;
-      if (!book) return { ...loan, coverUrl: null as string | null };
-      const uploaded = await getCoverSignedUrl(book.cover_image_path);
-      const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
-      return { ...loan, coverUrl };
-    })
-  );
-
-  const qrDataUrl =
-    user?.qr_code_data != null ? await qrCodeToDataUrl(user.qr_code_data) : null;
+  const [loansWithCovers, qrDataUrl] = await Promise.all([
+    Promise.all(
+      pagedLoans.map(async (loan) => {
+        const book = loan.books;
+        if (!book) return { ...loan, coverUrl: null as string | null };
+        const uploaded = await getCoverSignedUrl(book.cover_image_path);
+        const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
+        return { ...loan, coverUrl };
+      })
+    ),
+    user?.qr_code_data != null ? qrCodeToDataUrl(user.qr_code_data) : Promise.resolve(null),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
