@@ -29,7 +29,7 @@ export async function createComment(
     book_id: bookId,
     user_id: session.user.id,
     body,
-  });
+  } as never);
 
   if (error) {
     if (error.code === '23503') return { error: '書籍または利用者が存在しません。' };

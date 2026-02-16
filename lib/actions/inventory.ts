@@ -20,7 +20,7 @@ export async function clearInventoryChecks(): Promise<InventoryActionState> {
   }
   const supabase = createSupabaseServerClient();
   await supabase.from('inventory_checks').delete().neq('book_id', '00000000-0000-0000-0000-000000000000');
-  await supabase.from('inventory_clear_history').insert({ cleared_at: new Date().toISOString() });
+  await supabase.from('inventory_clear_history').insert({ cleared_at: new Date().toISOString() } as never);
   revalidatePath('/admin/inventory');
   return { success: '在庫チェック履歴をクリアしました。' };
 }
@@ -49,7 +49,7 @@ export async function checkBookByIsbn(
 
   await supabase
     .from('inventory_checks')
-    .upsert({ book_id: book.id, checked_at: new Date().toISOString() }, { onConflict: 'book_id' });
+    .upsert({ book_id: book.id, checked_at: new Date().toISOString() } as never, { onConflict: 'book_id' });
   revalidatePath('/admin/inventory');
   return { success: '在庫チェックを記録しました。' };
 }

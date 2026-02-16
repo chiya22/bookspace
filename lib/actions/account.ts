@@ -20,7 +20,7 @@ export async function updateDisplayName(
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from('users')
-    .update({ display_name: displayName || null })
+    .update({ display_name: displayName || null } as never)
     .eq('id', session.user.id);
 
   if (error) return { error: '更新に失敗しました。' };
