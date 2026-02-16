@@ -111,8 +111,8 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
         <div className="flex flex-col gap-3">
           <span className="text-xs font-medium text-zinc-700">タグ</span>
           <div className="flex flex-wrap gap-2">
-            {allTags.map((tag) => {
-              const checked = bookTagIds.includes(tag.id);
+            {(allTags ?? []).map((tag) => {
+              const checked = (bookTagIds ?? []).includes(tag.id);
               return (
                 <label key={tag.id} className="inline-flex cursor-pointer items-center">
                   <input
