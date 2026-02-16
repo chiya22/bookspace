@@ -15,7 +15,13 @@ const geistMono = Geist_Mono({
 
 const notoSansJp = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
-  subsets: ["japanese"],
+  // Noto_Sans_JP は "japanese" をサポートするが、next/font の型定義に含まれていない
+  subsets: ["latin", "japanese"] as unknown as (
+    | "cyrillic"
+    | "latin"
+    | "latin-ext"
+    | "vietnamese"
+  )[],
   weight: ["400", "500", "700"],
   display: "swap",
 });
