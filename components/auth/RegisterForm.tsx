@@ -11,6 +11,9 @@ export function RegisterForm() {
       {state?.error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>
       )}
+      {state?.success && (
+        <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-800">{state.success}</p>
+      )}
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium text-zinc-700">メール</span>
         <input

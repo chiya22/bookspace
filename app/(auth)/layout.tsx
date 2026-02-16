@@ -11,9 +11,9 @@ export default function AuthLayout({
         <Image
           src="/company_logo.svg"
           alt="ロゴ"
-          width={400}
-          height={400}
-          className="h-36 w-auto max-w-[200px] object-contain object-center"
+          width={300}
+          height={300}
+          className="h-28 w-auto max-w-[200px] object-contain object-center"
           unoptimized
         />
       </div>
