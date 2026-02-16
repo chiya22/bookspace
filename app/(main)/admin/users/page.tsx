@@ -61,12 +61,20 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                   )}
                 </td>
                 <td className="px-4 py-2">
-                  <Link
-                    href={`/admin/users/${user.id}/edit`}
-                    className="inline-flex items-center rounded-full border border-zinc-200 px-2 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/60 hover:text-emerald-800"
-                  >
-                    編集
-                  </Link>
+                  <span className="inline-flex flex-wrap items-center gap-1">
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="inline-flex items-center rounded-full border border-zinc-200 px-2 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/60 hover:text-emerald-800"
+                    >
+                      詳細
+                    </Link>
+                    <Link
+                      href={`/admin/users/${user.id}/edit`}
+                      className="inline-flex items-center rounded-full border border-zinc-200 px-2 py-1 text-[11px] text-zinc-700 shadow-sm transition hover:border-emerald-500/60 hover:text-emerald-800"
+                    >
+                      編集
+                    </Link>
+                  </span>
                 </td>
               </tr>
             ))}

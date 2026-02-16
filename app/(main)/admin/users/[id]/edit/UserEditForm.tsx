@@ -5,13 +5,19 @@ import Link from 'next/link';
 import type { UserRow } from '@/lib/users/queries';
 import type { UpdateUserState } from '@/lib/actions/users';
 
+const roleLabels: Record<string, string> = {
+  user: '利用者',
+  librarian: '受付者',
+  admin: '管理者',
+};
+
 type UserEditFormProps = {
   user: UserRow;
+  canEditRole: boolean;
   action: (prev: UpdateUserState, formData: FormData) => Promise<UpdateUserState>;
 };
 
-
-export function UserEditForm({ user, action }: UserEditFormProps) {
+export function UserEditForm({ user, canEditRole, action }: UserEditFormProps) {
   const [state, formAction] = useActionState(action, {});
 
   return (
@@ -43,15 +49,21 @@ export function UserEditForm({ user, action }: UserEditFormProps) {
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-zinc-700">役割</label>
-        <select
-          name="role"
-          defaultValue={user.role}
-          className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
-        >
-          <option value="user">利用者</option>
-          <option value="librarian">受付者</option>
-          <option value="admin">管理者</option>
-        </select>
+        {canEditRole ? (
+          <select
+            name="role"
+            defaultValue={user.role}
+            className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+          >
+            <option value="user">利用者</option>
+            <option value="librarian">受付者</option>
+            <option value="admin">管理者</option>
+          </select>
+        ) : (
+          <p className="rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-[13px] text-zinc-700">
+            {roleLabels[user.role] ?? user.role}
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-2">
         <input

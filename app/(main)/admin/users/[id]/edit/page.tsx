@@ -32,7 +32,11 @@ export default async function AdminUserEditPage({
         に戻る
       </p>
       <div className="mt-6 max-w-md">
-        <UserEditForm user={user} action={updateUser} />
+        <UserEditForm
+          user={user}
+          canEditRole={session.user.role === 'admin'}
+          action={updateUser}
+        />
       </div>
     </div>
   );

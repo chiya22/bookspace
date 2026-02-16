@@ -22,17 +22,25 @@ export async function updateUser(
 
   const name = formData.get('name')?.toString()?.trim();
   const email = formData.get('email')?.toString()?.trim();
-  const role = formData.get('role')?.toString()?.trim();
   const disabled = formData.get('disabled') === 'on';
 
   if (!name || !email) return { error: '名前とメールは必須です。' };
-  const validRoles: UserRole[] = ['user', 'librarian', 'admin'];
-  const newRole = validRoles.includes(role as UserRole) ? (role as UserRole) : 'user';
 
   const supabase = createSupabaseServerClient();
+  const updates: { name: string; email: string; disabled: boolean; role?: UserRole } = {
+    name,
+    email,
+    disabled,
+  };
+  if (session.user.role === 'admin') {
+    const role = formData.get('role')?.toString()?.trim();
+    const validRoles: UserRole[] = ['user', 'librarian', 'admin'];
+    updates.role = validRoles.includes(role as UserRole) ? (role as UserRole) : 'user';
+  }
+
   const { error } = await supabase
     .from('users')
-    .update({ name, email, role: newRole, disabled } as never)
+    .update(updates as never)
     .eq('id', userId);
 
   if (error) {
@@ -41,6 +49,7 @@ export async function updateUser(
   }
 
   revalidatePath('/admin/users');
+  revalidatePath(`/admin/users/${userId}`);
   revalidatePath(`/admin/users/${userId}/edit`);
   redirect('/admin/users');
 }
