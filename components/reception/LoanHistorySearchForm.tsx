@@ -3,8 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useTransition, useRef, useEffect } from 'react';
 
-const SEARCH_DEBOUNCE_MS = 300;
-
 type Props = {
   defaultValue: string;
   currentFilter: string;
@@ -12,14 +10,17 @@ type Props = {
 
 export function LoanHistorySearchForm({ defaultValue, currentFilter }: Props) {
   const router = useRouter();
-  const [, startTransition] = useTransition();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const prevPendingRef = useRef(false);
 
+  // 検索完了後（isPending が true → false になったとき）に入力欄にフォーカスを戻す
   useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+    if (prevPendingRef.current && !isPending) {
+      inputRef.current?.focus();
+    }
+    prevPendingRef.current = isPending;
+  }, [isPending]);
 
   function buildParamsAndNavigate(form: HTMLFormElement) {
     const q = (form.elements.namedItem('q') as HTMLInputElement).value.trim();
@@ -36,27 +37,31 @@ export function LoanHistorySearchForm({ defaultValue, currentFilter }: Props) {
     buildParamsAndNavigate(e.currentTarget);
   }
 
-  function onSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const form = e.currentTarget.form;
-    if (!form) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
-      buildParamsAndNavigate(form);
-    }, SEARCH_DEBOUNCE_MS);
-  }
-
   return (
-    <form onSubmit={onSubmit} className="min-w-0 flex-1 sm:min-w-[200px]">
+    <form onSubmit={onSubmit} className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:min-w-[200px]" aria-busy={isPending}>
       <input
+        ref={inputRef}
         type="search"
         name="q"
         defaultValue={defaultValue}
         placeholder="利用者名・メール・書籍タイトル・著者で検索"
-        onChange={onSearchInputChange}
-        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+        disabled={isPending}
+        className="min-w-0 flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 disabled:opacity-70"
         aria-label="利用者名・メール・書籍タイトル・著者で検索"
+        aria-describedby={isPending ? 'loans-search-status' : undefined}
       />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="shrink-0 rounded-full bg-zinc-800 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-700 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500/70"
+      >
+        {isPending ? '検索中…' : '検索'}
+      </button>
+      {isPending && (
+        <span id="loans-search-status" className="sr-only" aria-live="polite">
+          検索中…
+        </span>
+      )}
     </form>
   );
 }

@@ -3,8 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useTransition, useRef, useEffect } from 'react';
 
-const SEARCH_DEBOUNCE_MS = 300;
-
 type TagOption = { id: string; name: string };
 
 type Props = {
@@ -30,16 +28,9 @@ export function BookSearchForm({
   defaultFavoritesOnly = false,
 }: Props) {
   const router = useRouter();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const selectedSet = new Set(defaultTagIds);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -64,29 +55,9 @@ export function BookSearchForm({
     buildParamsAndNavigate(e.currentTarget);
   }
 
-  function onTagChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const form = e.currentTarget.form;
-    if (form) buildParamsAndNavigate(form);
-  }
-
-  function onFavChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const form = e.currentTarget.form;
-    if (form) buildParamsAndNavigate(form);
-  }
-
-  function onSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const form = e.currentTarget.form;
-    if (!form) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
-      buildParamsAndNavigate(form);
-    }, SEARCH_DEBOUNCE_MS);
-  }
-
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-3">
-      <div>
+    <form onSubmit={onSubmit} className="flex flex-col gap-3" aria-busy={isPending}>
+      <div className="flex flex-wrap items-center gap-2">
         <input
           ref={inputRef}
           type="search"
@@ -94,11 +65,24 @@ export function BookSearchForm({
           defaultValue={defaultValue}
           placeholder="タイトル・著者・出版社・ISBNで検索"
           autoFocus
-          onChange={onSearchInputChange}
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+          disabled={isPending}
+          className="min-w-0 flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 disabled:opacity-70 sm:min-w-[200px]"
           aria-label="タイトル・著者・出版社・ISBNで検索"
+          aria-describedby={isPending ? 'search-status' : undefined}
         />
+        <button
+          type="submit"
+          disabled={isPending}
+          className="shrink-0 rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-600 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
+        >
+          {isPending ? '検索中…' : '検索'}
+        </button>
       </div>
+      {isPending && (
+        <span id="search-status" className="sr-only" aria-live="polite">
+          検索中…
+        </span>
+      )}
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-zinc-500">タグで絞り込み:</span>
@@ -109,7 +93,6 @@ export function BookSearchForm({
                 name="tag"
                 value={tag.id}
                 defaultChecked={selectedSet.has(tag.id)}
-                onChange={onTagChange}
                 className="peer sr-only"
               />
               <span
@@ -129,7 +112,6 @@ export function BookSearchForm({
             type="checkbox"
             name="fav"
             defaultChecked={defaultFavoritesOnly}
-            onChange={onFavChange}
             className="h-3 w-3 rounded border-zinc-300"
           />
           <span>お気に入り登録している書籍のみ表示</span>
