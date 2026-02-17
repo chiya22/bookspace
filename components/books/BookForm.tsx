@@ -91,7 +91,10 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
                   const digits = e.target.value.replace(/\D/g, '');
                   if (digits.length === 13) {
                     ndlLookupRef.current?.triggerLookup()?.then(() => {
-                      registerButtonRef.current?.focus();
+                      // fieldset の disabled 解除後の再描画後にフォーカスする
+                      window.setTimeout(() => {
+                        registerButtonRef.current?.focus();
+                      }, 50);
                     });
                   }
                 }
