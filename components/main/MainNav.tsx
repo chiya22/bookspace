@@ -69,7 +69,9 @@ export function MainNav({ name, role }: MainNavProps) {
   return (
     <nav
       ref={navRef}
-      className="relative border-b border-emerald-900 bg-emerald-900/95 text-emerald-50 shadow-sm"
+      className="relative border-emerald-800 text-emerald-50 shadow-sm md:border-emerald-900
+        bg-gradient-to-b from-emerald-500 to-emerald-800
+        md:bg-gradient-to-r md:from-emerald-500 md:via-emerald-700 md:to-emerald-600"
       aria-label="メインメニュー"
     >
       <div className="mx-auto flex h-14 min-h-[3.5rem] max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -194,10 +196,10 @@ export function MainNav({ name, role }: MainNavProps) {
         </div>
       </div>
 
-      {/* モバイル: 開いたメニュー */}
+      {/* モバイル: 開いたメニュー（ヘッダーからの縦グラデーションが続く） */}
       {menuOpen && (
         <div
-          className="absolute left-0 right-0 top-full z-50 border-t border-emerald-800 bg-emerald-900/98 shadow-lg md:hidden"
+          className="absolute left-0 right-0 top-full z-50 border-t border-emerald-700/80 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-lg md:hidden"
           role="dialog"
           aria-label="メニュー"
         >
