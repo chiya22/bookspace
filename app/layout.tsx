@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
+import { Geist, Geist_Mono, M_PLUS_1p } from "next/font/google";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import "./globals.css";
 
@@ -13,9 +13,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const notoSansJp = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
-  // Noto_Sans_JP は "japanese" をサポートするが、next/font の型定義に含まれていない
+const mPlus1p = M_PLUS_1p({
+  variable: "--font-m-plus-1p",
   subsets: ["latin", "japanese"] as unknown as (
     | "cyrillic"
     | "latin"
@@ -39,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSansJp.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${mPlus1p.variable} antialiased`}
       >
         <a
           href="#main"
