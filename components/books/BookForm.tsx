@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBook, updateBook } from '@/lib/actions/books';
@@ -24,6 +25,11 @@ type BookFormProps = {
 
 export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], bookTagIds = [] }: BookFormProps) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const isbnInputRef = useRef<HTMLInputElement>(null);
+  const registerButtonRef = useRef<HTMLButtonElement>(null);
+  const ndlLookupRef = useRef<{ triggerLookup: () => Promise<void> }>(null);
+  const didHandleSuccessRef = useRef(false);
   const [createState, createAction] = useActionState(createBook, {});
   const [updateState, updateAction] = useActionState(
     (prev: { error?: string }, fd: FormData) => updateBook(book!.id, prev, fd),
@@ -33,22 +39,60 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
   const state = mode === 'create' ? createState : updateState;
   const action = mode === 'create' ? createAction : updateAction;
 
+  useEffect(() => {
+    if (mode !== 'create') return;
+    if (state?.success && !didHandleSuccessRef.current) {
+      formRef.current?.reset();
+      didHandleSuccessRef.current = true;
+      // クリーンアップで clearTimeout しない。effect 再実行でタイマーがキャンセルされるとフォーカスが当たらないため。
+      // revalidate 後の描画完了後にフォーカスする。ref が null の場合は DOM から取得する。
+      window.setTimeout(() => {
+        const input =
+          isbnInputRef.current ?? document.querySelector<HTMLInputElement>('form input[name="isbn"]');
+        input?.focus();
+      }, 100);
+    }
+    if (state?.error) {
+      didHandleSuccessRef.current = false;
+    }
+  }, [mode, state?.success, state?.error]);
+
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-4">
+    <form
+      ref={formRef}
+      action={action}
+      className="flex max-w-xl flex-col gap-4"
+      onSubmit={() => {
+        didHandleSuccessRef.current = false;
+      }}
+    >
       {state?.error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>
       )}
       <div className="flex items-center gap-2">
         <label className="w-24 shrink-0 text-xs font-medium text-zinc-700">ISBN</label>
         <input
+          ref={isbnInputRef}
           type="text"
           name="isbn"
           defaultValue={book?.isbn}
           placeholder="978-4-..."
           autoFocus={mode === 'create'}
           className="flex-1 rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+          onChange={
+            mode === 'create'
+              ? (e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  if (digits.length === 13) {
+                    ndlLookupRef.current?.triggerLookup()?.then(() => {
+                      registerButtonRef.current?.focus();
+                    });
+                  }
+                }
+              : undefined
+          }
         />
-        {mode === 'create' && <NdlLookup />}
+        {mode === 'create' && <NdlLookup ref={ndlLookupRef} />}
       </div>
       <div className="flex gap-2">
         <label className="w-24 shrink-0 text-xs font-medium text-zinc-700">タイトル</label>
@@ -153,6 +197,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
       )}
       <div className="flex gap-2">
         <button
+          ref={mode === 'create' ? registerButtonRef : undefined}
           type="submit"
           className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
         >

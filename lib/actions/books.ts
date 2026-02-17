@@ -15,7 +15,7 @@ function assertAdmin() {
   // 呼び出し元で getSession() して role を確認したうえで呼ぶ想定。二重チェック用。
 }
 
-export type CreateBookState = { error?: string };
+export type CreateBookState = { error?: string; success?: boolean };
 export type UpdateBookState = { error?: string };
 export type DeleteBookState = { error?: string };
 
@@ -54,7 +54,7 @@ export async function createBook(
 
   revalidatePath('/books');
   revalidatePath('/admin/books');
-  redirect('/admin/books');
+  return { success: true };
 }
 
 function getExtension(filename: string): string {

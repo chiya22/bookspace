@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 
-export function NdlLookup() {
+export const NdlLookup = forwardRef<{ triggerLookup: () => Promise<void> }>(function NdlLookup(_, ref) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleLookup() {
+  const handleLookup = useCallback(async () => {
     const isbnInput = document.querySelector<HTMLInputElement>('input[name="isbn"]');
     const titleInput = document.querySelector<HTMLInputElement>('input[name="title"]');
     const authorInput = document.querySelector<HTMLInputElement>('input[name="author"]');
@@ -32,7 +32,9 @@ export function NdlLookup() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useImperativeHandle(ref, () => ({ triggerLookup: handleLookup }), [handleLookup]);
 
   return (
     <div className="flex items-center gap-2">
@@ -47,4 +49,4 @@ export function NdlLookup() {
       {error && <span className="text-sm text-red-600">{error}</span>}
     </div>
   );
-}
+});
