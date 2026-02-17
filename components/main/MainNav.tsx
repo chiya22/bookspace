@@ -59,10 +59,10 @@ export function MainNav({ name, role }: MainNavProps) {
 
   const linkClass = (href: string, isAdmin?: boolean) =>
     isAdmin
-      ? `block rounded-full px-3 py-2 text-sm font-medium hover:bg-emerald-700 ${
-          isActive(href) ? 'bg-emerald-600 text-white' : 'bg-emerald-800 text-white'
+      ? `block rounded px-3 py-2 text-sm font-medium hover:text-white ${
+          isActive(href) ? 'bg-emerald-600 text-white' : 'text-emerald-50/80 hover:bg-emerald-800/70'
         }`
-      : `block rounded px-3 py-2 text-sm hover:text-white ${
+      : `block rounded px-3 py-2 text-sm font-deium hover:text-white ${
           isActive(href) ? 'bg-emerald-700 text-white' : 'text-emerald-50/80 hover:bg-emerald-800/70'
         }`;
 
@@ -76,9 +76,23 @@ export function MainNav({ name, role }: MainNavProps) {
         <div className="flex min-w-0 flex-1 items-center gap-6 md:gap-8">
           <Link
             href="/"
-            className="shrink-0 text-base font-semibold tracking-wide text-emerald-50 sm:text-lg"
+            className="flex shrink-0 items-center justify-center rounded-lg p-2 text-emerald-50 hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            aria-label="ホーム"
           >
-            ちよプラブックスペース
+            <svg
+              className="h-6 w-6 sm:h-7 sm:w-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
           </Link>
 
           {/* デスクトップ: 横並びリンク */}
@@ -89,7 +103,7 @@ export function MainNav({ name, role }: MainNavProps) {
                 href={href}
                 className={
                   `rounded-full px-3 py-1 text-sm font-medium hover:bg-emerald-700 ${
-                    isActive(href) ? 'bg-emerald-600 text-white' : 'bg-emerald-800 text-white'
+                    isActive(href) ? 'bg-emerald-600 text-white' : 'text-white'
                 }`}
               >
                 {label}
@@ -102,7 +116,7 @@ export function MainNav({ name, role }: MainNavProps) {
                   href={href}
                   className={
                       `rounded-full px-3 py-1 text-sm font-medium hover:bg-emerald-700 ${
-                          isActive(href) ? 'bg-emerald-600 text-white' : 'bg-emerald-800 text-white'
+                          isActive(href) ? 'bg-emerald-600 text-white' : 'text-white'
                         }`
                   }
                 >
@@ -114,11 +128,27 @@ export function MainNav({ name, role }: MainNavProps) {
 
         {/* デスクトップ: ユーザー名・ログアウト */}
         <div className="hidden items-center gap-4 md:flex">
-          <span className="truncate text-sm text-emerald-50/70">{name ?? ''}</span>
+          <span className="flex items-center gap-1.5 truncate text-sm text-white" aria-hidden>
+            <svg
+              className="h-4 w-4 shrink-0 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <span className="truncate">{name ?? ''}</span>
+          </span>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="shrink-0 text-sm text-emerald-50/80 hover:text-white"
+            className="rounded-full px-3 py-1 text-sm text-emerald-50/80 hover:bg-emerald-700 hover:text-white"
             aria-label="ログアウト"
           >
             ログアウト
@@ -127,7 +157,23 @@ export function MainNav({ name, role }: MainNavProps) {
 
         {/* モバイル: ハンバーガー + ユーザー名 */}
         <div className="flex items-center gap-2 md:hidden">
-          <span className="truncate text-xs text-emerald-50/70 sm:text-sm">{name ?? ''}</span>
+          <span className="flex items-center gap-1.5 truncate text-xs text-white sm:text-sm" aria-hidden>
+            <svg
+              className="h-4 w-4 shrink-0 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <span className="truncate">{name ?? ''}</span>
+          </span>
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
