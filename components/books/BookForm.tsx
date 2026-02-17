@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react';
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBook, updateBook } from '@/lib/actions/books';
+import { createBook, updateBook, type CreateBookState } from '@/lib/actions/books';
 import { NdlLookup } from './NdlLookup';
 import { CoverImage } from './CoverImage';
 
@@ -41,7 +41,8 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
 
   useEffect(() => {
     if (mode !== 'create') return;
-    if (state?.success && !didHandleSuccessRef.current) {
+    const createStateOnly = state as CreateBookState;
+    if (createStateOnly?.success && !didHandleSuccessRef.current) {
       formRef.current?.reset();
       didHandleSuccessRef.current = true;
       // クリーンアップで clearTimeout しない。effect 再実行でタイマーがキャンセルされるとフォーカスが当たらないため。
@@ -55,7 +56,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
     if (state?.error) {
       didHandleSuccessRef.current = false;
     }
-  }, [mode, state?.success, state?.error]);
+  }, [mode, (state as CreateBookState)?.success, state?.error]);
 
   return (
     <form
