@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBook, updateBook, type CreateBookState } from '@/lib/actions/books';
@@ -30,6 +30,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
   const registerButtonRef = useRef<HTMLButtonElement>(null);
   const ndlLookupRef = useRef<{ triggerLookup: () => Promise<void> }>(null);
   const didHandleSuccessRef = useRef(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
   const [createState, createAction] = useActionState(createBook, {});
   const [updateState, updateAction] = useActionState(
     (prev: { error?: string }, fd: FormData) => updateBook(book!.id, prev, fd),
@@ -70,6 +71,10 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
       {state?.error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>
       )}
+      <fieldset
+        disabled={mode === 'create' && lookupLoading}
+        className="flex flex-col gap-4 border-0 p-0 m-0 min-w-0 disabled:opacity-70 disabled:pointer-events-none"
+      >
       <div className="flex items-center gap-2">
         <label className="w-24 shrink-0 text-xs font-medium text-zinc-700">ISBN</label>
         <input
@@ -93,7 +98,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
               : undefined
           }
         />
-        {mode === 'create' && <NdlLookup ref={ndlLookupRef} />}
+        {mode === 'create' && <NdlLookup ref={ndlLookupRef} onLoadingChange={setLookupLoading} />}
       </div>
       <div className="flex gap-2">
         <label className="w-24 shrink-0 text-xs font-medium text-zinc-700">タイトル</label>
@@ -212,6 +217,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
           キャンセル
         </button>
       </div>
+      </fieldset>
     </form>
   );
 }

@@ -2,7 +2,14 @@
 
 import { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 
-export const NdlLookup = forwardRef<{ triggerLookup: () => Promise<void> }>(function NdlLookup(_, ref) {
+type NdlLookupProps = {
+  onLoadingChange?: (loading: boolean) => void;
+};
+
+export const NdlLookup = forwardRef<{ triggerLookup: () => Promise<void> }, NdlLookupProps>(function NdlLookup(
+  { onLoadingChange },
+  ref
+) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,6 +24,7 @@ export const NdlLookup = forwardRef<{ triggerLookup: () => Promise<void> }>(func
     }
     setError('');
     setLoading(true);
+    onLoadingChange?.(true);
     try {
       const res = await fetch(`/api/ndl/lookup?isbn=${encodeURIComponent(isbnInput.value.trim())}`);
       const data = await res.json();
@@ -31,8 +39,9 @@ export const NdlLookup = forwardRef<{ triggerLookup: () => Promise<void> }>(func
       setError('取得に失敗しました。');
     } finally {
       setLoading(false);
+      onLoadingChange?.(false);
     }
-  }, []);
+  }, [onLoadingChange]);
 
   useImperativeHandle(ref, () => ({ triggerLookup: handleLookup }), [handleLookup]);
 
