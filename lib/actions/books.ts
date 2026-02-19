@@ -155,7 +155,10 @@ export async function updateBook(
   };
   const { error } = await supabase.from('books').update(updatePayload as never).eq('id', id);
 
-  if (error) return { error: '更新に失敗しました。' };
+  if (error) {
+    if (error.code === '23505') return { error: 'このISBNは既に登録されています。' };
+    return { error: '更新に失敗しました。' };
+  }
 
   const tagIds = (formData.getAll('tag_ids') ?? []) as string[];
   const newTagName = formData.get('new_tag')?.toString()?.trim();
