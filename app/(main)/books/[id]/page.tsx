@@ -24,15 +24,35 @@ export async function generateMetadata({
   };
 }
 
+function buildListReturnQuery(search: {
+  page?: string;
+  q?: string;
+  tag?: string | string[];
+  fav?: string;
+}): string {
+  const params = new URLSearchParams();
+  if (search.page && search.page !== '1') params.set('page', search.page);
+  if (search.q) params.set('q', search.q);
+  if (search.tag) {
+    const tags = Array.isArray(search.tag) ? search.tag : [search.tag];
+    tags.forEach((t) => t && params.append('tag', t));
+  }
+  if (search.fav === '1') params.set('fav', '1');
+  return params.toString();
+}
+
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; page?: string; q?: string; tag?: string | string[]; fav?: string }>;
 };
 
 export default async function BookDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { from } = await searchParams;
+  const resolvedSearch = await searchParams;
+  const { from } = resolvedSearch;
   const fromAdmin = from === 'admin';
+  const listReturnQuery = buildListReturnQuery(resolvedSearch);
+  const listHref = listReturnQuery ? `/books?${listReturnQuery}` : '/books';
 
   const [book, session] = await Promise.all([
     getBookById(id),
@@ -55,7 +75,7 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          href="/books"
+          href={listHref}
           className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm transition hover:border-emerald-500/50 hover:text-emerald-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 focus-visible:ring-offset-1"
         >
           <span className="text-xs" aria-hidden>←</span>

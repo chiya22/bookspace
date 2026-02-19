@@ -92,7 +92,15 @@ export default async function BooksPage({ searchParams }: Props) {
             <li key={book.id}>
               <div className="relative">
                 <Link
-                  href={`/books/${book.id}`}
+                  href={(() => {
+                    const params = new URLSearchParams();
+                    if (page > 1) params.set('page', String(page));
+                    if (keyword) params.set('q', keyword);
+                    tagIds.forEach((tid) => params.append('tag', tid));
+                    if (favoritesOnly) params.set('fav', '1');
+                    const qs = params.toString();
+                    return `/books/${book.id}${qs ? `?${qs}` : ''}`;
+                  })()}
                   className="flex gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:border-emerald-500/60 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
                 >
                   <div className="h-24 w-16 shrink-0 overflow-hidden rounded bg-zinc-100">

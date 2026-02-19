@@ -108,7 +108,14 @@ export default async function AdminBooksPage({ searchParams }: Props) {
                   </div>
                   <div className="flex shrink-0 gap-1.5">
                     <Link
-                      href={`/admin/books/${book.id}/edit`}
+                      href={(() => {
+                        const params = new URLSearchParams();
+                        if (page > 1) params.set('page', String(page));
+                        if (keyword) params.set('q', keyword);
+                        tagIds.forEach((tid) => params.append('tag', tid));
+                        const qs = params.toString();
+                        return `/admin/books/${book.id}/edit${qs ? `?${qs}` : ''}`;
+                      })()}
                       className="inline-flex items-center rounded-full border border-zinc-200 px-2 py-1 text-[11px] text-zinc-700 hover:border-emerald-500/60 hover:text-emerald-800"
                     >
                       編集

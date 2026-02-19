@@ -21,9 +21,11 @@ type BookFormProps = {
   currentCoverUrl: string | null;
   allTags: TagRow[];
   bookTagIds: string[];
+  /** 更新後に一覧へ戻る際のクエリ文字列（例: page=2&q=foo）。省略時は /admin/books へ戻る */
+  returnQuery?: string;
 };
 
-export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], bookTagIds = [] }: BookFormProps) {
+export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], bookTagIds = [], returnQuery }: BookFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const isbnInputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +70,9 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
         didHandleSuccessRef.current = false;
       }}
     >
+      {mode === 'edit' && returnQuery !== undefined && (
+        <input type="hidden" name="return_query" value={returnQuery} />
+      )}
       {state?.error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>
       )}

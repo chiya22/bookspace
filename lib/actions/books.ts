@@ -188,7 +188,9 @@ export async function updateBook(
   revalidatePath('/admin/books');
   revalidatePath(`/books/${id}`);
   revalidatePath(`/admin/books/${id}/edit`);
-  redirect('/admin/books');
+  const returnQuery = formData.get('return_query')?.toString()?.trim();
+  const listPath = returnQuery ? `/admin/books?${returnQuery}` : '/admin/books';
+  redirect(listPath);
 }
 
 export async function deleteBook(id: string): Promise<DeleteBookState> {
