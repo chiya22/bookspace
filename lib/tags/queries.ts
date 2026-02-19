@@ -26,6 +26,22 @@ export async function getTagsPaginated(
   };
 }
 
+/** 指定タグIDごとに、そのタグが付与されている書籍件数を返す。 */
+export async function getBookCountByTagIds(tagIds: string[]): Promise<Map<string, number>> {
+  const countByTagId = new Map<string, number>();
+  if (tagIds.length === 0) return countByTagId;
+  for (const id of tagIds) countByTagId.set(id, 0);
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from('book_tags')
+    .select('tag_id')
+    .in('tag_id', tagIds);
+  for (const row of (data ?? []) as { tag_id: string }[]) {
+    countByTagId.set(row.tag_id, (countByTagId.get(row.tag_id) ?? 0) + 1);
+  }
+  return countByTagId;
+}
+
 export async function getTagById(id: string): Promise<TagRow | null> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase.from('tags').select('id, name').eq('id', id).maybeSingle();

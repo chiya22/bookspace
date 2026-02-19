@@ -1,5 +1,5 @@
 import { getSession } from '@/lib/auth';
-import { getTagsPaginated } from '@/lib/tags/queries';
+import { getTagsPaginated, getBookCountByTagIds } from '@/lib/tags/queries';
 import { getPageSize, parsePage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
@@ -23,6 +23,7 @@ export default async function AdminTagsPage({ searchParams }: Props) {
   const pageSize = getPageSize();
   const page = parsePage(resolved);
   const { tags, totalCount } = await getTagsPaginated(page, pageSize);
+  const bookCountByTagId = await getBookCountByTagIds(tags.map((t) => t.id));
 
   return (
     <div>
@@ -44,7 +45,12 @@ export default async function AdminTagsPage({ searchParams }: Props) {
           <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white text-sm">
             {tags.map((tag) => (
               <li key={tag.id} className="flex items-center justify-between gap-4 px-4 py-3">
-                <span className="text-[13px] font-semibold text-zinc-900">{tag.name}</span>
+                <span className="flex items-baseline gap-2">
+                  <span className="text-[13px] font-semibold text-zinc-900">{tag.name}</span>
+                  <span className="text-[11px] text-zinc-500">
+                    （{bookCountByTagId.get(tag.id) ?? 0}件）
+                  </span>
+                </span>
                 <span className="flex shrink-0 gap-2 text-[11px]">
                   <Link
                     href={`/admin/tags/${tag.id}/edit`}
