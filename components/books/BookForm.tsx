@@ -15,6 +15,7 @@ type BookFormProps = {
   currentCoverUrl?: null;
   allTags?: TagRow[] | null;
   bookTagIds?: string[] | null;
+  returnQuery?: never;
 } | {
   mode: 'edit';
   book: { id: string; title: string; author: string; publisher: string; isbn: string; cover_image_path: string | null };
