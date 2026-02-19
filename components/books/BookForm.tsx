@@ -13,8 +13,8 @@ type BookFormProps = {
   mode: 'create';
   book?: null;
   currentCoverUrl?: null;
-  allTags?: null;
-  bookTagIds?: null;
+  allTags?: TagRow[] | null;
+  bookTagIds?: string[] | null;
 } | {
   mode: 'edit';
   book: { id: string; title: string; author: string; publisher: string; isbn: string; cover_image_path: string | null };
@@ -157,7 +157,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
       {mode === 'create' && (
         <p className="text-sm text-zinc-500">表紙は国会図書館の書影を自動で表示します。登録後、編集画面でアップロード画像に差し替えできます。</p>
       )}
-      {mode === 'edit' && (
+      {(mode === 'edit' || mode === 'create') && (
         <div className="flex flex-col gap-3">
           <span className="text-xs font-medium text-zinc-700">タグ</span>
           <div className="flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
               className="w-48 rounded-full border border-dashed border-zinc-300 px-3 py-1 text-[11px] text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none"
             />
             <span className="text-[10px] text-zinc-400">
-              入力して「更新」するとタグが追加されます
+              {mode === 'create' ? '入力して「登録」するとタグが追加されます' : '入力して「更新」するとタグが追加されます'}
             </span>
           </div>
         </div>

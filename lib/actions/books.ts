@@ -90,6 +90,18 @@ export async function createBook(
     await supabase.from('books').update({ cover_image_path: coverPath } as never).eq('id', bookId);
   }
 
+  const tagIds = (formData.getAll('tag_ids') ?? []) as string[];
+  const newTagName = formData.get('new_tag')?.toString()?.trim();
+  if (newTagName) {
+    try {
+      const newId = await findOrCreateTagByName(newTagName);
+      if (!tagIds.includes(newId)) tagIds.push(newId);
+    } catch {
+      return { error: 'タグの追加に失敗しました。' };
+    }
+  }
+  await setBookTags(bookId, tagIds);
+
   revalidatePath('/books');
   revalidatePath('/admin/books');
   return { success: true };
