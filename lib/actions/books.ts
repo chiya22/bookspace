@@ -8,7 +8,8 @@ import { redirect } from 'next/navigation';
 import type { Database } from '@/types/database';
 
 const COVER_BUCKET = 'book-covers';
-const NDL_THUMBNAIL_BASE = 'https://iss.ndl.go.jp/thumbnail/';
+// 2024年1月のNDLサーチリニューアルでURL形式変更。ndlsearch ドメイン・末尾 .jpg 必須。
+const NDL_THUMBNAIL_BASE = 'https://ndlsearch.ndl.go.jp/thumbnail/';
 const NDL_FETCH_TIMEOUT_MS = 8000;
 
 type BookInsert = Database['public']['Tables']['books']['Insert'];
@@ -22,12 +23,13 @@ async function fetchAndSaveNdlCover(
   isbnNormalized: string
 ): Promise<string | null> {
   try {
-    const res = await fetch(`${NDL_THUMBNAIL_BASE}${isbnNormalized}`, {
+    const res = await fetch(`${NDL_THUMBNAIL_BASE}${isbnNormalized}.jpg`, {
       signal: AbortSignal.timeout(NDL_FETCH_TIMEOUT_MS),
       headers: { 'User-Agent': 'Bookspace/1.0' },
     });
     if (!res.ok) return null;
     const contentType = res.headers.get('Content-Type') ?? 'image/jpeg';
+    if (!contentType.startsWith('image/')) return null;
     const bytes = new Uint8Array(await res.arrayBuffer());
     if (bytes.length === 0) return null;
     const ext = contentType.includes('png') ? '.png' : '.jpg';
@@ -191,6 +193,41 @@ export async function updateBook(
   const returnQuery = formData.get('return_query')?.toString()?.trim();
   const listPath = returnQuery ? `/admin/books?${returnQuery}` : '/admin/books';
   redirect(listPath);
+}
+
+export type RefetchNdlCoverState = { error?: string; success?: boolean; notFound?: boolean };
+
+export async function refetchNdlCover(bookId: string): Promise<RefetchNdlCoverState> {
+  const session = await getSession();
+  if (!session?.user || (session.user.role !== 'librarian' && session.user.role !== 'admin')) {
+    return { error: '権限がありません。' };
+  }
+
+  const supabase = createSupabaseServerClient();
+  const { data: book } = await supabase
+    .from('books')
+    .select('isbn')
+    .eq('id', bookId)
+    .single();
+  const isbn = (book as { isbn: string } | null)?.isbn?.trim();
+  if (!isbn) return { error: '書籍のISBNが取得できません。' };
+
+  const isbnNormalized = isbn.replace(/-/g, '');
+  const coverPath = await fetchAndSaveNdlCover(supabase, bookId, isbnNormalized);
+  if (!coverPath) {
+    revalidatePath(`/admin/books/${bookId}/edit`);
+    revalidatePath(`/books/${bookId}`);
+    revalidatePath('/admin/books');
+    revalidatePath('/books');
+    return { notFound: true };
+  }
+
+  await supabase.from('books').update({ cover_image_path: coverPath } as never).eq('id', bookId);
+  revalidatePath(`/admin/books/${bookId}/edit`);
+  revalidatePath(`/books/${bookId}`);
+  revalidatePath('/admin/books');
+  revalidatePath('/books');
+  return { success: true };
 }
 
 export async function deleteBook(id: string): Promise<DeleteBookState> {

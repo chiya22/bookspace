@@ -26,11 +26,13 @@ export async function getCoverSignedUrl(path: string | null): Promise<string | n
 }
 
 /**
- * 国会図書館の書影APIのURLを返す。
- * 自前の表紙画像がない場合のフォールバック用。ISBN に該当する書影が存在しない場合は 404 になる。
+ * 国会図書館の書影を表示するためのURLを返す。
+ * 自前の表紙画像がない場合のフォールバック用。同一オリジンのプロキシ経由で配信するため、
+ * ブラウザでの CORB ブロックを避けられる。ISBN に該当する書影が存在しない場合は 404 になる。
  * @see https://ndlsearch.ndl.go.jp/help/api/thumbnail
+ * @see docs/ndl-cover-corb.md
  */
 export function getNdlThumbnailUrl(isbn: string): string {
   const normalized = isbn.replace(/-/g, '');
-  return normalized ? `https://iss.ndl.go.jp/thumbnail/${normalized}` : '';
+  return normalized ? `/api/cover/ndl?isbn=${encodeURIComponent(normalized)}` : '';
 }

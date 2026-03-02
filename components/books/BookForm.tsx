@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createBook, updateBook, type CreateBookState } from '@/lib/actions/books';
 import { NdlLookup } from './NdlLookup';
 import { CoverImage } from './CoverImage';
+import { RefetchNdlCoverButton } from './RefetchNdlCoverButton';
 
 type TagRow = { id: string; name: string };
 
@@ -147,8 +148,8 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
               width={112}
               height={160}
             />
-            <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-600">表紙を差し替える（アップロード）</label>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs text-zinc-600">表紙を差し替える（アップロード）</label>
               <input
                 type="file"
                 name="cover"
@@ -156,6 +157,9 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
                 className="block text-sm text-zinc-600 file:mr-2 file:rounded file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-700 hover:file:bg-zinc-200"
               />
               <p className="text-xs text-zinc-500">画像を選択すると、保存時に表紙が差し替わります。</p>
+              {book.isbn && (
+                <RefetchNdlCoverButton bookId={book.id} />
+              )}
             </div>
           </div>
         </div>
