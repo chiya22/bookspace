@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -29,11 +30,19 @@ function SubmitButton({ isLoan }: { isLoan: boolean }) {
 
 export function LoanReturnForm({ mode, action }: Props) {
   const [state, formAction] = useActionState(action, {});
+  const isbnInputRef = useRef<HTMLInputElement>(null);
+  const qrDataRef = useRef<HTMLTextAreaElement>(null);
 
   const isLoan = mode === 'loan';
 
   return (
-    <form action={formAction} className="flex max-w-md flex-col gap-4">
+    <form
+      action={formAction}
+      className="flex max-w-md flex-col gap-4"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.preventDefault();
+      }}
+    >
       {state?.error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
           {state.error}
@@ -47,12 +56,21 @@ export function LoanReturnForm({ mode, action }: Props) {
       <div>
         <label className="mb-1 block text-xs font-medium text-zinc-700">書籍のISBN</label>
         <input
+          ref={isbnInputRef}
           type="text"
           name="isbn"
           placeholder="978-4-..."
           required
           autoFocus
           className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+          onChange={(e) => {
+            const digits = e.target.value.replace(/\D/g, '');
+            if (digits.length >= 13) {
+              // バーコードリーダーは高速で入力するため、即座にフォーカスを移すと
+              // 末尾1桁が次のフィールドに入る。短い遅延で全桁をISBN欄に収めてから移す。
+              setTimeout(() => qrDataRef.current?.focus(), 100);
+            }
+          }}
         />
       </div>
       <div>
@@ -60,6 +78,7 @@ export function LoanReturnForm({ mode, action }: Props) {
           会員証QRコード（スキャン結果）
         </label>
         <textarea
+          ref={qrDataRef}
           name="qr_data"
           rows={3}
           placeholder='{"userId":"...","name":"..."} の形式でスキャン結果を貼り付けてください'

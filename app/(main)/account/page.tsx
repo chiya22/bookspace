@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { qrCodeToDataUrl } from '@/lib/qr/toDataUrl';
 import { AccountDisplayNameForm } from './AccountDisplayNameForm';
+import { AccountPasswordForm } from './AccountPasswordForm';
 
 export const metadata = {
   title: 'アカウント | ちよプラブックスペース',
@@ -53,6 +54,10 @@ export default async function AccountPage() {
           </div>
         </dl>
         <AccountDisplayNameForm currentDisplayName={user?.display_name ?? ''} />
+      </section>
+      <section className="rounded-lg border border-zinc-200 bg-white p-4">
+        <h2 className="text-sm font-medium text-zinc-800">パスワードの変更</h2>
+        <AccountPasswordForm />
       </section>
     </div>
   );
