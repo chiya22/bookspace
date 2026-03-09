@@ -99,6 +99,48 @@ export async function getAllLoans(
 /**
  * 貸出履歴一覧をキーワードで絞り込む（利用者名・メール・書籍タイトル・著者）。
  */
+/**
+ * 指定された書籍IDのうち、現在貸出中のものを返す。
+ * 蔵書検索・一覧で貸出状態を表示するために使用。
+ */
+export async function getOnLoanBookIds(bookIds: string[]): Promise<Set<string>> {
+  if (bookIds.length === 0) return new Set();
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from('loans')
+    .select('book_id')
+    .in('book_id', bookIds)
+    .is('returned_at', null);
+  const ids = (data ?? []).map((r) => (r as { book_id: string }).book_id);
+  return new Set(ids);
+}
+
+/**
+ * 指定された貸出IDについて、返却依頼メールの送信日時を取得する。
+ * 複数回送信されている場合は最新の sent_at を返す。
+ */
+export async function getReturnRequestSentAtByLoanIds(
+  loanIds: string[]
+): Promise<Map<string, string>> {
+  if (loanIds.length === 0) return new Map();
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase
+    .from('email_logs')
+    .select('loan_id, sent_at')
+    .eq('kind', 'return_request')
+    .in('loan_id', loanIds)
+    .order('sent_at', { ascending: false });
+
+  const map = new Map<string, string>();
+  for (const row of data ?? []) {
+    const r = row as { loan_id: string | null; sent_at: string };
+    if (r.loan_id && !map.has(r.loan_id)) {
+      map.set(r.loan_id, r.sent_at);
+    }
+  }
+  return map;
+}
+
 export function filterLoansByKeyword(
   loans: LoanWithBookAndUser[],
   keyword: string

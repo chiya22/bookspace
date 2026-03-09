@@ -1,6 +1,11 @@
 import { Suspense } from 'react';
 import { getSession } from '@/lib/auth';
-import { getAllLoans, filterLoansByKeyword, type LoanHistoryFilter } from '@/lib/loans/queries';
+import {
+  getAllLoans,
+  filterLoansByKeyword,
+  getReturnRequestSentAtByLoanIds,
+  type LoanHistoryFilter,
+} from '@/lib/loans/queries';
 import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
@@ -46,15 +51,23 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
   const totalCount = loansFiltered.length;
   const pagedLoans = sliceForPage(loansFiltered, page, pageSize);
 
-  const loansWithCovers = await Promise.all(
-    pagedLoans.map(async (loan) => {
-      const book = loan.books;
-      if (!book) return { ...loan, coverUrl: null as string | null };
-      const uploaded = await getCoverSignedUrl(book.cover_image_path);
-      const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
-      return { ...loan, coverUrl };
-    })
-  );
+  const [loansWithCovers, returnRequestSentAt] = await Promise.all([
+    Promise.all(
+      pagedLoans.map(async (loan) => {
+        const book = loan.books;
+        if (!book) return { ...loan, coverUrl: null as string | null };
+        const uploaded = await getCoverSignedUrl(book.cover_image_path);
+        const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
+        return { ...loan, coverUrl };
+      })
+    ),
+    getReturnRequestSentAtByLoanIds(pagedLoans.map((l) => l.id)),
+  ]);
+
+  const loansWithReturnRequestInfo = loansWithCovers.map((loan) => ({
+    ...loan,
+    returnRequestSentAt: returnRequestSentAt.get(loan.id) ?? null,
+  }));
 
   return (
     <div>
@@ -103,7 +116,7 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
           <>
             {/* 狭い画面: 1件を2段カードで表示 */}
             <ul className="flex flex-col gap-4 md:hidden">
-              {loansWithCovers.map((loan) => {
+              {loansWithReturnRequestInfo.map((loan) => {
                 const book = loan.books;
                 const user = loan.users;
                 const lentAtStr = loan.lent_at
@@ -125,15 +138,29 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
                         <p className="font-medium text-zinc-900 truncate">{user?.name ?? '—'}</p>
                         <p className="text-xs text-zinc-500 truncate">{user?.email ?? ''}</p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span
-                          className={`rounded px-2 py-0.5 text-xs font-medium ${
-                            isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
-                          }`}
-                        >
-                          {isActive ? '貸出中' : '返却済み'}
-                        </span>
-                        {isActive && <ReturnRequestByLoanButton loanId={loan.id} />}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`rounded px-2 py-0.5 text-xs font-medium ${
+                              isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
+                            }`}
+                          >
+                            {isActive ? '貸出中' : '返却済み'}
+                          </span>
+                          {isActive && <ReturnRequestByLoanButton loanId={loan.id} />}
+                        </div>
+                        {loan.returnRequestSentAt && (
+                          <span className="text-[10px] text-zinc-500">
+                            返却依頼送信:{' '}
+                            {new Date(loan.returnRequestSentAt).toLocaleString('ja-JP', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {/* 2段目: 書籍・貸出日・返却日・日数 */}
@@ -178,11 +205,11 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
                     <th className="px-4 py-2 text-left font-medium text-zinc-700">返却日</th>
                     <th className="px-4 py-2 text-left font-medium text-zinc-700">貸出日数</th>
                     <th className="px-4 py-2 text-left font-medium text-zinc-700">状態</th>
-                    <th className="px-4 py-2 text-left font-medium text-zinc-700">操作</th>
+                    <th className="px-4 py-2 text-left font-medium text-zinc-700">返却依頼</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loansWithCovers.map((loan) => {
+                  {loansWithReturnRequestInfo.map((loan) => {
                     const book = loan.books;
                     const user = loan.users;
                     const lentAtStr = loan.lent_at
@@ -237,7 +264,32 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
                         </td>
                         <td className="px-4 py-2">
                           {isActive ? (
-                            <ReturnRequestByLoanButton loanId={loan.id} />
+                            <div className="flex flex-col gap-0.5">
+                              <ReturnRequestByLoanButton loanId={loan.id} />
+                              {loan.returnRequestSentAt && (
+                                <span className="text-[11px] text-zinc-500">
+                                  送信済:{' '}
+                                  {new Date(loan.returnRequestSentAt).toLocaleString('ja-JP', {
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              )}
+                            </div>
+                          ) : loan.returnRequestSentAt ? (
+                            <span className="text-[11px] text-zinc-500">
+                              送信済:{' '}
+                              {new Date(loan.returnRequestSentAt).toLocaleString('ja-JP', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
                           ) : (
                             <span className="text-[11px] text-zinc-400">—</span>
                           )}

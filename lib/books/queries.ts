@@ -26,7 +26,7 @@ export async function searchBooks(
     const { data: rows } = await supabase
       .from('books')
       .select('id, title, author, publisher, isbn, cover_image_path')
-      .order('title');
+      .order('created_at', { ascending: false });
     data = (rows ?? []) as BookRow[];
   } else {
     const pattern = `%${k}%`;
@@ -34,7 +34,7 @@ export async function searchBooks(
       .from('books')
       .select('id, title, author, publisher, isbn, cover_image_path')
       .or(`title.ilike.${pattern},author.ilike.${pattern},publisher.ilike.${pattern},isbn.ilike.${pattern}`)
-      .order('title');
+      .order('created_at', { ascending: false });
     data = (rows ?? []) as BookRow[];
   }
 

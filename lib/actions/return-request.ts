@@ -84,6 +84,7 @@ export async function sendReturnRequestEmail(
     text: bodyLines.join('\n'),
     kind: 'return_request',
     recipientUserId: user.id,
+    loanId: loanId,
   });
 
   if (!result.ok) return { error: `メール送信に失敗しました: ${result.error}` };

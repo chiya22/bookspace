@@ -22,6 +22,7 @@ export async function sendEmailAndLog(params: {
   text: string;
   kind: EmailKind;
   recipientUserId?: string | null;
+  loanId?: string | null;
 }): Promise<SendEmailResult> {
   if (!resend) {
     return { ok: true };
@@ -44,6 +45,7 @@ export async function sendEmailAndLog(params: {
     recipient_user_id: params.recipientUserId ?? null,
     recipient_email: params.to,
     subject: params.subject,
+    loan_id: params.loanId ?? null,
   } as never);
 
   return { ok: true, id: data?.id };

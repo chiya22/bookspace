@@ -5,6 +5,7 @@ import { getAllTags, getTagsByBookIds } from '@/lib/tags/queries';
 import { getSession } from '@/lib/auth';
 import { getFavoriteBookIds } from '@/lib/favorites/queries';
 import { getCommentCountsByBookIds } from '@/lib/comments/queries';
+import { getOnLoanBookIds } from '@/lib/loans/queries';
 import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
@@ -50,9 +51,10 @@ export default async function BooksPage({ searchParams }: Props) {
   const totalCount = filteredBooks.length;
   const pagedBooks = sliceForPage(filteredBooks, page, pageSize);
 
-  const [tagsByBookId, commentCountsByBookId] = await Promise.all([
+  const [tagsByBookId, commentCountsByBookId, onLoanBookIds] = await Promise.all([
     getTagsByBookIds(pagedBooks.map((b) => b.id)),
     getCommentCountsByBookIds(pagedBooks.map((b) => b.id)),
+    getOnLoanBookIds(pagedBooks.map((b) => b.id)),
   ]);
 
   const booksWithCovers = await Promise.all(
@@ -63,6 +65,7 @@ export default async function BooksPage({ searchParams }: Props) {
         coverUrl: uploaded ?? (getNdlThumbnailUrl(book.isbn) || null),
         tags: tagsByBookId.get(book.id) ?? [],
         commentCount: commentCountsByBookId.get(book.id) ?? 0,
+        isOnLoan: onLoanBookIds.has(book.id),
       };
     })
   );
@@ -113,8 +116,18 @@ export default async function BooksPage({ searchParams }: Props) {
                     />
                   </div>
                   <div className="min-w-0 flex-1 pb-4">
-                    <div className="break-words text-[13px] font-semibold text-zinc-900">
-                      {book.title}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <div className="break-words text-[13px] font-semibold text-zinc-900">
+                        {book.title}
+                      </div>
+                      {book.isOnLoan && (
+                        <span
+                          className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800"
+                          aria-label="貸出中"
+                        >
+                          貸出中
+                        </span>
+                      )}
                     </div>
                     <div className="truncate text-[11px] text-zinc-600">{book.author}</div>
                     <div className="truncate text-[11px] text-zinc-500">{book.publisher}</div>

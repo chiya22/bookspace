@@ -150,6 +150,7 @@ export interface Database {
           subject: string | null;
           sent_at: string;
           created_at: string;
+          loan_id: string | null;
         };
         Insert: {
           id?: string;
@@ -159,6 +160,7 @@ export interface Database {
           subject?: string | null;
           sent_at: string;
           created_at?: string;
+          loan_id?: string | null;
         };
         Update: {
           id?: string;
@@ -168,6 +170,7 @@ export interface Database {
           subject?: string | null;
           sent_at?: string;
           created_at?: string;
+          loan_id?: string | null;
         };
       };
       password_reset_tokens: {

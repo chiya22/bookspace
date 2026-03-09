@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { searchBooks } from '@/lib/books/queries';
 import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
 import { getAllTags, getTagsByBookIds } from '@/lib/tags/queries';
+import { getOnLoanBookIds } from '@/lib/loans/queries';
 import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
@@ -35,7 +36,10 @@ export default async function AdminBooksPage({ searchParams }: Props) {
 
   const totalCount = books.length;
   const pagedBooks = sliceForPage(books, page, pageSize);
-  const tagsByBookId = await getTagsByBookIds(pagedBooks.map((b) => b.id));
+  const [tagsByBookId, onLoanBookIds] = await Promise.all([
+    getTagsByBookIds(pagedBooks.map((b) => b.id)),
+    getOnLoanBookIds(pagedBooks.map((b) => b.id)),
+  ]);
 
   const withCovers = await Promise.all(
     pagedBooks.map(async (b) => {
@@ -44,6 +48,7 @@ export default async function AdminBooksPage({ searchParams }: Props) {
         ...b,
         coverUrl: uploaded ?? (getNdlThumbnailUrl(b.isbn) || null),
         tags: tagsByBookId.get(b.id) ?? [],
+        isOnLoan: onLoanBookIds.has(b.id),
       };
     })
   );
@@ -90,6 +95,14 @@ export default async function AdminBooksPage({ searchParams }: Props) {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <span className="text-[13px] font-semibold text-zinc-900">{book.title}</span>
+                    {book.isOnLoan && (
+                      <span
+                        className="ml-1.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800"
+                        aria-label="貸出中"
+                      >
+                        貸出中
+                      </span>
+                    )}
                     <span className="ml-2 text-[11px] text-zinc-600">
                       {book.author}／{book.publisher}
                     </span>

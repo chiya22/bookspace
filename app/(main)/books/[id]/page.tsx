@@ -5,6 +5,7 @@ import { getTagsByBookId } from '@/lib/tags/queries';
 import { getCommentsByBookId } from '@/lib/comments/queries';
 import { getSession } from '@/lib/auth';
 import { isBookFavorited } from '@/lib/favorites/queries';
+import { getOnLoanBookIds } from '@/lib/loans/queries';
 import { notFound } from 'next/navigation';
 import { CoverImage } from '@/components/books/CoverImage';
 import { FavoriteStarButton } from '@/components/books/FavoriteStarButton';
@@ -60,12 +61,14 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
   ]);
   if (!book) notFound();
 
-  const [uploadedCoverUrl, tags, favorited, comments] = await Promise.all([
+  const [uploadedCoverUrl, tags, favorited, comments, onLoanBookIds] = await Promise.all([
     getCoverSignedUrl(book.cover_image_path),
     getTagsByBookId(id),
     fromAdmin ? Promise.resolve(false) : (session?.user?.id ? isBookFavorited(session.user.id, id) : Promise.resolve(false)),
     getCommentsByBookId(id),
+    getOnLoanBookIds([id]),
   ]);
+  const isOnLoan = onLoanBookIds.has(id);
   const coverUrl = uploadedCoverUrl ?? (getNdlThumbnailUrl(book.isbn) || null);
   const isStaff = session?.user?.role === 'librarian' || session?.user?.role === 'admin';
   const userId = session?.user?.id;
@@ -117,6 +120,21 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
           <div>
             <dt className="font-medium text-zinc-500">ISBN</dt>
             <dd className="text-zinc-900">{book.isbn}</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-500">貸出状況</dt>
+            <dd>
+              {isOnLoan ? (
+                <span
+                  className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800"
+                  aria-label="貸出中"
+                >
+                  貸出中
+                </span>
+              ) : (
+                <span className="text-sm text-zinc-600">貸出可能</span>
+              )}
+            </dd>
           </div>
           {tags.length > 0 && (
             <div>
