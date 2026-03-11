@@ -28,7 +28,13 @@ type BookFormProps = {
   returnQuery?: string;
 };
 
-function SubmitButton({ mode, registerButtonRef }: { mode: 'create' | 'edit'; registerButtonRef: React.RefObject<HTMLButtonElement> }) {
+function SubmitButton({
+  mode,
+  registerButtonRef,
+}: {
+  mode: 'create' | 'edit';
+  registerButtonRef: React.RefObject<HTMLButtonElement | null>;
+}) {
   const { pending } = useFormStatus();
   return (
     <button
