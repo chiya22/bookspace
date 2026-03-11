@@ -22,15 +22,23 @@ export async function updateUser(
 
   const name = formData.get('name')?.toString()?.trim();
   const email = formData.get('email')?.toString()?.trim();
+  const displayNameRaw = formData.get('display_name')?.toString()?.trim() ?? '';
   const disabled = formData.get('disabled') === 'on';
 
   if (!name || !email) return { error: '名前とメールは必須です。' };
 
   const supabase = createSupabaseServerClient();
-  const updates: { name: string; email: string; disabled: boolean; role?: UserRole } = {
+  const updates: {
+    name: string;
+    email: string;
+    disabled: boolean;
+    display_name?: string | null;
+    role?: UserRole;
+  } = {
     name,
     email,
     disabled,
+    display_name: displayNameRaw ? displayNameRaw : null,
   };
   if (session.user.role === 'admin') {
     const role = formData.get('role')?.toString()?.trim();

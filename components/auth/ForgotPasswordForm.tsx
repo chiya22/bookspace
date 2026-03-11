@@ -1,7 +1,22 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { requestPasswordReset, type RequestResetState } from '@/lib/actions/password-reset';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="w-full rounded-full bg-zinc-900 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md disabled:opacity-60 disabled:hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
+    >
+      {pending ? '送信中…' : 'リセット用メールを送信'}
+    </button>
+  );
+}
 
 export function ForgotPasswordForm() {
   const [state, formAction] = useActionState(requestPasswordReset, {} as RequestResetState);
@@ -28,12 +43,7 @@ export function ForgotPasswordForm() {
           className="rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </label>
-      <button
-        type="submit"
-        className="w-full rounded-full bg-zinc-900 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
-      >
-        リセット用メールを送信
-      </button>
+      <SubmitButton />
     </form>
   );
 }

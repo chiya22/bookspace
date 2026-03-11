@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { createBook, updateBook, type CreateBookState } from '@/lib/actions/books';
 import { NdlLookup } from './NdlLookup';
@@ -26,6 +27,21 @@ type BookFormProps = {
   /** 更新後に一覧へ戻る際のクエリ文字列（例: page=2&q=foo）。省略時は /admin/books へ戻る */
   returnQuery?: string;
 };
+
+function SubmitButton({ mode, registerButtonRef }: { mode: 'create' | 'edit'; registerButtonRef: React.RefObject<HTMLButtonElement> }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      ref={mode === 'create' ? registerButtonRef : undefined}
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md disabled:opacity-60 disabled:hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
+    >
+      {pending ? (mode === 'create' ? '登録中…' : '更新中…') : mode === 'create' ? '登録' : '更新'}
+    </button>
+  );
+}
 
 export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], bookTagIds = [], returnQuery }: BookFormProps) {
   const router = useRouter();
@@ -212,13 +228,7 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
         </div>
       )}
       <div className="flex gap-2">
-        <button
-          ref={mode === 'create' ? registerButtonRef : undefined}
-          type="submit"
-          className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
-        >
-          {mode === 'create' ? '登録' : '更新'}
-        </button>
+        <SubmitButton mode={mode} registerButtonRef={registerButtonRef} />
         <button
           type="button"
           onClick={() => router.back()}

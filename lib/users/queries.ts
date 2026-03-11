@@ -5,6 +5,7 @@ export type UserRow = {
   id: string;
   email: string;
   name: string;
+  display_name: string | null;
   role: UserRole;
   disabled: boolean;
   created_at: string;
@@ -14,7 +15,7 @@ export async function getAllUsers(): Promise<UserRow[]> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase
     .from('users')
-    .select('id, email, name, role, disabled, created_at')
+    .select('id, email, name, display_name, role, disabled, created_at')
     .order('created_at', { ascending: false });
   return (data ?? []) as UserRow[];
 }
@@ -28,7 +29,7 @@ export async function getUsersPaginated(
   const to = from + pageSize - 1;
   const { data, count } = await supabase
     .from('users')
-    .select('id, email, name, role, disabled, created_at', { count: 'exact' })
+    .select('id, email, name, display_name, role, disabled, created_at', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to);
   return {
@@ -41,7 +42,7 @@ export async function getUserById(id: string): Promise<UserRow | null> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase
     .from('users')
-    .select('id, email, name, role, disabled, created_at')
+    .select('id, email, name, display_name, role, disabled, created_at')
     .eq('id', id)
     .maybeSingle();
   return data as UserRow | null;

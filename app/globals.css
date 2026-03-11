@@ -26,6 +26,25 @@ body {
   min-height: 100vh;
 }
 
+/* 操作可能要素: マウスポインタを常に pointer に */
+a[href],
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"] {
+  cursor: pointer;
+}
+
+/* 無効状態は not-allowed に */
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+input[type="reset"]:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* スキップリンク: 通常は非表示、フォーカス時のみ表示（アクセシビリティ） */
 .skip-link {
   position: absolute;

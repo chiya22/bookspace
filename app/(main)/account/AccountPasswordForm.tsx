@@ -1,7 +1,22 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { changePassword } from '@/lib/actions/account';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="w-fit rounded-full bg-zinc-800 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-zinc-700 hover:shadow-md disabled:opacity-60 disabled:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
+    >
+      {pending ? '変更中…' : 'パスワードを変更する'}
+    </button>
+  );
+}
 
 export function AccountPasswordForm() {
   const [state, formAction] = useActionState(changePassword, {});
@@ -50,12 +65,7 @@ export function AccountPasswordForm() {
           />
         </label>
       </div>
-      <button
-        type="submit"
-        className="w-fit rounded-full bg-zinc-800 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-zinc-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
-      >
-        パスワードを変更する
-      </button>
+      <SubmitButton />
     </form>
   );
 }

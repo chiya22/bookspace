@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
 import type { TagRow } from '@/lib/tags/queries';
 import type { UpdateTagState } from '@/lib/actions/tags';
@@ -9,6 +10,20 @@ type TagEditFormProps = {
   tag: TagRow;
   action: (prev: UpdateTagState, formData: FormData) => Promise<UpdateTagState>;
 };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 disabled:opacity-60 disabled:hover:bg-emerald-700"
+    >
+      {pending ? '更新中…' : '更新'}
+    </button>
+  );
+}
 
 export function TagEditForm({ tag, action }: TagEditFormProps) {
   const [state, formAction] = useActionState(action, {});
@@ -31,12 +46,7 @@ export function TagEditForm({ tag, action }: TagEditFormProps) {
         />
       </div>
       <div className="flex gap-2">
-        <button
-          type="submit"
-          className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
-        >
-          更新
-        </button>
+        <SubmitButton />
         <Link
           href="/admin/tags"
           className="rounded-full border border-zinc-300 px-4 py-1.5 text-[13px] text-zinc-700 shadow-sm transition hover:bg-zinc-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/70"

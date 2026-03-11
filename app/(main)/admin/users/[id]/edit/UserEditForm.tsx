@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
 import type { UserRow } from '@/lib/users/queries';
 import type { UpdateUserState } from '@/lib/actions/users';
@@ -16,6 +17,20 @@ type UserEditFormProps = {
   canEditRole: boolean;
   action: (prev: UpdateUserState, formData: FormData) => Promise<UpdateUserState>;
 };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 disabled:opacity-60 disabled:hover:bg-emerald-700"
+    >
+      {pending ? '更新中…' : '更新'}
+    </button>
+  );
+}
 
 export function UserEditForm({ user, canEditRole, action }: UserEditFormProps) {
   const [state, formAction] = useActionState(action, {});
@@ -34,6 +49,16 @@ export function UserEditForm({ user, canEditRole, action }: UserEditFormProps) {
           defaultValue={user.name}
           required
           autoFocus
+          className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-zinc-700">表示名（任意）</label>
+        <input
+          type="text"
+          name="display_name"
+          defaultValue={user.display_name ?? ''}
+          placeholder="未入力の場合は名前が表示されます"
           className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </div>
@@ -78,12 +103,7 @@ export function UserEditForm({ user, canEditRole, action }: UserEditFormProps) {
         </label>
       </div>
       <div className="flex gap-2">
-        <button
-          type="submit"
-          className="rounded-full bg-emerald-700 px-5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
-        >
-          更新
-        </button>
+        <SubmitButton />
         <Link
           href="/admin/users"
           className="rounded-full border border-zinc-300 px-4 py-1.5 text-[13px] text-zinc-700 shadow-sm transition hover:bg-zinc-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/70"

@@ -1,11 +1,26 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { updateDisplayName } from '@/lib/actions/account';
 
 type Props = {
   currentDisplayName: string;
 };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="shrink-0 rounded-full bg-emerald-700 px-4 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md disabled:opacity-60 disabled:hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
+    >
+      {pending ? '更新中…' : '更新'}
+    </button>
+  );
+}
 
 export function AccountDisplayNameForm({ currentDisplayName }: Props) {
   const [state, formAction] = useActionState(updateDisplayName, {});
@@ -29,12 +44,7 @@ export function AccountDisplayNameForm({ currentDisplayName }: Props) {
             className="rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
           />
         </label>
-        <button
-          type="submit"
-          className="shrink-0 rounded-full bg-emerald-700 px-4 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
-        >
-          更新
-        </button>
+        <SubmitButton />
       </div>
     </form>
   );

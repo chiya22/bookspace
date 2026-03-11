@@ -1,9 +1,24 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { resetPassword, type ResetPasswordState } from '@/lib/actions/password-reset';
 
 type Props = { token: string };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="w-full rounded-full bg-zinc-900 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md disabled:opacity-60 disabled:hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
+    >
+      {pending ? '更新中…' : 'パスワードを更新'}
+    </button>
+  );
+}
 
 export function ResetPasswordForm({ token }: Props) {
   const [state, formAction] = useActionState(resetPassword, {} as ResetPasswordState);
@@ -54,12 +69,7 @@ export function ResetPasswordForm({ token }: Props) {
           同じパスワードを再入力してください
         </span>
       </label>
-      <button
-        type="submit"
-        className="w-full rounded-full bg-zinc-900 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
-      >
-        パスワードを更新
-      </button>
+      <SubmitButton />
     </form>
   );
 }

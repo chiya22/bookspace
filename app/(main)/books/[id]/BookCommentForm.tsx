@@ -1,11 +1,26 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createComment } from '@/lib/actions/comments';
 
 type Props = {
   bookId: string;
 };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="w-fit rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 disabled:hover:bg-zinc-900"
+    >
+      {pending ? '投稿中…' : 'コメントを投稿'}
+    </button>
+  );
+}
 
 export function BookCommentForm({ bookId }: Props) {
   const [state, formAction] = useActionState(createComment, {});
@@ -27,12 +42,7 @@ export function BookCommentForm({ bookId }: Props) {
           className="rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
         />
       </label>
-      <button
-        type="submit"
-        className="w-fit rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-      >
-        コメントを投稿
-      </button>
+      <SubmitButton />
     </form>
   );
 }

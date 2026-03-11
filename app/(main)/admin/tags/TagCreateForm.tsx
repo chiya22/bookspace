@@ -1,7 +1,22 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createTag, type UpdateTagState } from '@/lib/actions/tags';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="rounded-full bg-emerald-700 px-4 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 disabled:opacity-60 disabled:hover:bg-emerald-700"
+    >
+      {pending ? '追加中…' : '追加'}
+    </button>
+  );
+}
 
 export function TagCreateForm() {
   const [state, formAction] = useActionState(createTag, {} as UpdateTagState);
@@ -24,12 +39,7 @@ export function TagCreateForm() {
           className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
       </div>
-      <button
-        type="submit"
-        className="rounded-full bg-emerald-700 px-4 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
-      >
-        追加
-      </button>
+      <SubmitButton />
     </form>
   );
 }

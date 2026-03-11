@@ -37,6 +37,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50">
               <th className="px-4 py-2 text-left font-medium text-zinc-700">名前</th>
+              <th className="px-4 py-2 text-left font-medium text-zinc-700">表示名</th>
               <th className="px-4 py-2 text-left font-medium text-zinc-700">メール</th>
               <th className="px-4 py-2 text-left font-medium text-zinc-700">役割</th>
               <th className="px-4 py-2 text-left font-medium text-zinc-700">状態</th>
@@ -47,6 +48,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             {users.map((user) => (
               <tr key={user.id} className="border-b border-zinc-100">
                 <td className="px-4 py-2 text-zinc-900">{user.name}</td>
+                <td className="px-4 py-2 text-zinc-600">{user.display_name ?? '—'}</td>
                 <td className="px-4 py-2 text-zinc-600">{user.email}</td>
                 <td className="px-4 py-2 text-zinc-600">{roleLabels[user.role] ?? user.role}</td>
                 <td className="px-4 py-2">
