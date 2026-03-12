@@ -10,6 +10,17 @@ import { revalidatePath } from 'next/cache';
 export type LoanState = { error?: string; success?: string };
 export type ReturnState = { error?: string; success?: string };
 
+function formatJstDateOnly(isoOrDate: string | Date): string {
+  const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate;
+  return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
 function getUserIdFromInput(qrDataOrUserId: string): string | null {
   const parsed = parseQrCodeData(qrDataOrUserId);
   if (parsed) return parsed.userId;
@@ -71,6 +82,11 @@ export async function registerLoan(
 
   if (error) return { error: '貸出登録に失敗しました。' };
 
+  const lentAt = new Date();
+  // 「貸出日を含まない2週間後」= 貸出日 + 14日
+  const dueAt = addDays(lentAt, 14);
+  const dueDateStr = formatJstDateOnly(dueAt);
+
   const loanBookLines = [
     `${user.name} 様`,
     '',
@@ -81,6 +97,10 @@ export async function registerLoan(
     `　著者：${book.author}`,
     `　出版社：${book.publisher}`,
     `　ISBN：${book.isbn}`,
+    '',
+    '【返却期限】',
+    `　${dueDateStr}`,
+    `　上記の日付までにご返却をお願いいたします。`,
     '',
     'ご利用ありがとうございます。',
   ];
