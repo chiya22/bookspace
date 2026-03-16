@@ -21,13 +21,13 @@ const mPlus1p = M_PLUS_1p({
     | "latin-ext"
     | "vietnamese"
   )[],
-  weight: ["400", "500", "700"],
+  weight: ["400", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "ちよプラブックスペース",
-  description: "企業図書館向け図書貸出管理",
+  title: "ちよプライブラリ",
+  description: "図書貸出管理",
 };
 
 export default function RootLayout({
