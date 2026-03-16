@@ -38,6 +38,8 @@ export function CoverImage({ src, alt, className, width, height }: Props) {
       width={width}
       height={height}
       onError={() => setError(true)}
+      decoding="async"
+      loading="lazy"
     />
   );
 }

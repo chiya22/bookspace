@@ -64,6 +64,7 @@ export function PaginationNav({
         {prevPage !== null ? (
           <Link
             href={buildUrl(prevPage)}
+            prefetch={false}
             className="rounded border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
           >
             前へ
@@ -89,6 +90,7 @@ export function PaginationNav({
                 ) : (
                   <Link
                     href={buildUrl(p)}
+                    prefetch={false}
                     className="flex h-8 w-8 items-center justify-center rounded border border-zinc-200 bg-white text-sm text-zinc-700 hover:bg-zinc-50"
                   >
                     {p}
@@ -101,6 +103,7 @@ export function PaginationNav({
         {nextPage !== null ? (
           <Link
             href={buildUrl(nextPage)}
+            prefetch={false}
             className="rounded border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
           >
             次へ

@@ -84,27 +84,34 @@ export function BookSearchForm({
         </span>
       )}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-zinc-500">タグで絞り込み:</span>
-          {allTags.map((tag) => (
-            <label key={tag.id} className="inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                name="tag"
-                value={tag.id}
-                defaultChecked={selectedSet.has(tag.id)}
-                className="peer sr-only"
-              />
-              <span
-                className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white/80 px-2 py-0.5 text-[11px] text-zinc-700 shadow-sm transition
-                  hover:border-emerald-500/40 hover:bg-white
-                  peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:text-emerald-800"
-              >
-                {tag.name}
-              </span>
-            </label>
-          ))}
-        </div>
+        <details className="group" open={selectedSet.size > 0}>
+          <summary className="inline-flex cursor-pointer list-none text-xs font-medium text-zinc-500 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 rounded px-1">
+            <span className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 transition-transform group-open:rotate-90"><path d="m9 18 6-6-6-6"/></svg>
+              タグで絞り込み
+            </span>
+          </summary>
+          <div className="mt-2 flex flex-wrap items-center gap-2 pl-4">
+            {allTags.map((tag) => (
+              <label key={tag.id} className="inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  name="tag"
+                  value={tag.id}
+                  defaultChecked={selectedSet.has(tag.id)}
+                  className="peer sr-only"
+                />
+                <span
+                  className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white/80 px-2 py-0.5 text-[11px] text-zinc-700 shadow-sm transition
+                    hover:border-emerald-500/40 hover:bg-white
+                    peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:text-emerald-800"
+                >
+                  {tag.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        </details>
       )}
       {showFavoritesFilter && (
         <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs text-zinc-700">

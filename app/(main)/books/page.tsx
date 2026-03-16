@@ -104,6 +104,7 @@ export default async function BooksPage({ searchParams }: Props) {
                     const qs = params.toString();
                     return `/books/${book.id}${qs ? `?${qs}` : ''}`;
                   })()}
+                  prefetch={false}
                   className="flex gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:border-emerald-500/60 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70"
                 >
                   <div className="h-24 w-16 shrink-0 overflow-hidden rounded bg-zinc-100">
