@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 
 export const metadata = {
-  title: 'パスワードの再設定 | ちよプラブックスペース',
+  title: 'パスワードの再設定 | ちよプライブラリ',
   description: '新しいパスワードを設定',
 };
 

@@ -2,7 +2,7 @@ import { registerReturn } from '@/lib/actions/loans';
 import { LoanReturnForm } from '@/components/reception/LoanReturnForm';
 
 export const metadata = {
-  title: '返却処理 | ちよプラブックスペース',
+  title: '返却処理 | ちよプライブラリ',
 };
 
 export default function ReceptionReturnPage() {

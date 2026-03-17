@@ -8,7 +8,7 @@ import { CoverImage } from '@/components/books/CoverImage';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'トップ | ちよプラブックスペース',
+  title: 'トップ | ちよプライブラリ',
   description: '会員証QR・貸出中一覧',
 };
 
@@ -89,8 +89,8 @@ export default async function TopPage({ searchParams }: Props) {
               const days =
                 loan.lent_at
                   ? Math.floor(
-                      (Date.now() - new Date(loan.lent_at).getTime()) / (24 * 60 * 60 * 1000)
-                    )
+                    (Date.now() - new Date(loan.lent_at).getTime()) / (24 * 60 * 60 * 1000)
+                  )
                   : 0;
               return (
                 <li key={loan.id}>

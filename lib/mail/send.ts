@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
-const mailFrom = process.env.MAIL_FROM ?? 'ちよプラブックスペース <onboarding@resend.dev>';
+const mailFrom = process.env.MAIL_FROM ?? 'ちよプライブラリ <onboarding@resend.dev>';
 
 export type EmailKind = 'loan' | 'return' | 'return_request' | 'password_reset' | 'email_verification';
 

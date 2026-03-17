@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { TagEditForm } from './TagEditForm';
 
 export const metadata = {
-  title: 'タグ名を変更 | ちよプラブックスペース',
+  title: 'タグ名を変更 | ちよプライブラリ',
 };
 
 export default async function AdminTagEditPage({

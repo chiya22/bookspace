@@ -5,7 +5,7 @@ import { AccountDisplayNameForm } from './AccountDisplayNameForm';
 import { AccountPasswordForm } from './AccountPasswordForm';
 
 export const metadata = {
-  title: 'アカウント | ちよプラブックスペース',
+  title: 'アカウント | ちよプライブラリ',
   description: 'ユーザー情報・会員証QR',
 };
 

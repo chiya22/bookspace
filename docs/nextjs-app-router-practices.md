@@ -176,7 +176,7 @@ export async function createBook(formData: FormData) {
 
 ```ts
 export const metadata = {
-  title: 'ちよプラブックスペース',
+  title: 'ちよプライブラリ',
   description: '企業図書館向け貸出管理',
 };
 ```

@@ -20,7 +20,7 @@ export async function generateMetadata({
   const book = await getBookById(id);
   if (!book) return { title: '書籍が見つかりません' };
   return {
-    title: `${book.title} | 蔵書詳細 | ちよプラブックスペース`,
+    title: `${book.title} | 蔵書詳細 | ちよプライブラリ`,
     description: `${book.author}／${book.publisher}`,
   };
 }

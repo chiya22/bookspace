@@ -55,10 +55,10 @@ export async function sendReturnRequestEmail(
 
   const lentAtStr = loan.lent_at
     ? new Date(loan.lent_at).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '—';
   const days = loanDays(loan.lent_at, loan.returned_at);
   const bookTitle = book?.title ?? '（書籍名不明）';
@@ -80,7 +80,7 @@ export async function sendReturnRequestEmail(
 
   const result = await sendEmailAndLog({
     to: user.email,
-    subject: '【ちよプラブックスペース】返却のご依頼',
+    subject: '【ちよプライブラリ】返却のご依頼',
     text: bodyLines.join('\n'),
     kind: 'return_request',
     recipientUserId: user.id,

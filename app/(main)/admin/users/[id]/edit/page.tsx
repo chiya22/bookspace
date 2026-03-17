@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { UserEditForm } from './UserEditForm';
 
 export const metadata = {
-  title: '利用者編集 | ちよプラブックスペース',
+  title: '利用者編集 | ちよプライブラリ',
 };
 
 export default async function AdminUserEditPage({

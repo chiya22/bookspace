@@ -8,7 +8,7 @@ import { TagCreateForm } from './TagCreateForm';
 import { TagDeleteForm } from './TagDeleteForm';
 
 export const metadata = {
-  title: 'タグ管理 | ちよプラブックスペース',
+  title: 'タグ管理 | ちよプライブラリ',
 };
 
 type Props = { searchParams: Promise<{ page?: string }> };

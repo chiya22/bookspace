@@ -15,7 +15,7 @@ import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
 import { CoverImage } from '@/components/books/CoverImage';
 
 export const metadata = {
-  title: '貸出履歴一覧 | ちよプラブックスペース',
+  title: '貸出履歴一覧 | ちよプライブラリ',
   description: '全利用者の貸出・返却履歴',
 };
 
@@ -91,11 +91,10 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
               <Link
                 key={opt.value}
                 href={href}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 focus-visible:ring-offset-1 ${
-                  isSelected
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 focus-visible:ring-offset-1 ${isSelected
                     ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
                     : 'text-zinc-600 hover:text-zinc-900'
-                }`}
+                  }`}
                 aria-current={isSelected ? 'page' : undefined}
               >
                 {opt.label}
@@ -141,9 +140,8 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`rounded px-2 py-0.5 text-xs font-medium ${
-                              isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
-                            }`}
+                            className={`rounded px-2 py-0.5 text-xs font-medium ${isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
+                              }`}
                           >
                             {isActive ? '貸出中' : '返却済み'}
                           </span>
@@ -255,9 +253,8 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
                         <td className="px-4 py-2 text-zinc-600">{days}日</td>
                         <td className="px-4 py-2">
                           <span
-                            className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-                              isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
-                            }`}
+                            className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
+                              }`}
                           >
                             {isActive ? '貸出中' : '返却済み'}
                           </span>

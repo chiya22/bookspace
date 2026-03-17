@@ -80,7 +80,7 @@ export async function registerUser(
   const body = [
     `${name} 様`,
     '',
-    'ちよプラブックスペースの会員登録を受け付けました。',
+    'ちよプライブラリの会員登録を受け付けました。',
     '以下のリンクをクリックして、メールアドレスを確認し登録を完了してください。',
     '',
     verifyUrl,
@@ -91,7 +91,7 @@ export async function registerUser(
 
   const result = await sendEmailAndLog({
     to: email,
-    subject: '【ちよプラブックスペース】会員登録の確認',
+    subject: '【ちよプライブラリ】会員登録の確認',
     text: body,
     kind: 'email_verification',
     recipientUserId: null,

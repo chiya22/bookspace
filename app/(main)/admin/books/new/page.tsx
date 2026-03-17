@@ -2,7 +2,7 @@ import { BookForm } from '@/components/books/BookForm';
 import { getAllTags } from '@/lib/tags/queries';
 
 export const metadata = {
-  title: '蔵書登録 | ちよプラブックスペース',
+  title: '蔵書登録 | ちよプライブラリ',
 };
 
 export default async function AdminBooksNewPage() {

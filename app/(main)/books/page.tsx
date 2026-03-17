@@ -14,7 +14,7 @@ import { CoverImage } from '@/components/books/CoverImage';
 import { FavoriteStarButton } from '@/components/books/FavoriteStarButton';
 
 export const metadata = {
-  title: '蔵書検索 | ちよプラブックスペース',
+  title: '蔵書検索 | ちよプライブラリ',
   description: '蔵書の検索・一覧',
 };
 

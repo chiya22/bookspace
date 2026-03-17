@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
 
 export const metadata = {
-  title: 'ログイン | ちよプラブックスペース',
+  title: 'ログイン | ちよプライブラリ',
   description: 'ログイン',
 };
 

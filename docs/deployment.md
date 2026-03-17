@@ -59,7 +59,7 @@ Vercel のプロジェクト画面で **Settings** → **Environment Variables**
 | `NEXTAUTH_URL` | **本番の URL**（後述） | 例: `https://your-app.vercel.app` |
 | `NEXTAUTH_SECRET` | ランダムな長い文字列 | [generate-secret.vercel.app](https://generate-secret.vercel.app/) 等で生成 |
 | `RESEND_API_KEY` | Resend の API キー | [Resend](https://resend.com/api-keys) で取得（メール送信に必要） |
-| `MAIL_FROM` | 送信元メール | 例: `ちよプラブックスペース <noreply@yourdomain.com>`（Resend で検証済みドメイン推奨） |
+| `MAIL_FROM` | 送信元メール | 例: `ちよプライブラリ <noreply@yourdomain.com>`（Resend で検証済みドメイン推奨） |
 
 - **Environment** は **Production**（と必要なら Preview）にチェックを付けて保存してください。
 - 初回デプロイ時は `NEXTAUTH_URL` を仮で `https://your-app.vercel.app` にしておき、デプロイ後に表示される実際の URL に差し替えて再デプロイしても構いません。

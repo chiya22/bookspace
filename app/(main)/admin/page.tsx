@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '管理 | ちよプラブックスペース',
+  title: '管理 | ちよプライブラリ',
 };
 
 const menuItems = [

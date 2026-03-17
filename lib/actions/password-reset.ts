@@ -76,7 +76,7 @@ export async function requestPasswordReset(
 
   const result = await sendEmailAndLog({
     to: email,
-    subject: '【ちよプラブックスペース】パスワードのリセット',
+    subject: '【ちよプライブラリ】パスワードのリセット',
     text: body,
     kind: 'password_reset',
     recipientUserId: user.id,

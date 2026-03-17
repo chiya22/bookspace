@@ -2,7 +2,7 @@ import { registerLoan } from '@/lib/actions/loans';
 import { LoanReturnForm } from '@/components/reception/LoanReturnForm';
 
 export const metadata = {
-  title: '貸出処理 | ちよプラブックスペース',
+  title: '貸出処理 | ちよプライブラリ',
 };
 
 export default function ReceptionLoanPage() {

@@ -3,7 +3,7 @@ import { completeRegistrationWithToken } from '@/lib/actions/verify-email';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'メールアドレスの確認 | ちよプラブックスペース',
+  title: 'メールアドレスの確認 | ちよプライブラリ',
   description: '会員登録の完了',
 };
 

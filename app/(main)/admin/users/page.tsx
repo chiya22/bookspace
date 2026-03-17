@@ -5,7 +5,7 @@ import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
 
 export const metadata = {
-  title: '利用者管理 | ちよプラブックスペース',
+  title: '利用者管理 | ちよプライブラリ',
 };
 
 const roleLabels: Record<string, string> = {

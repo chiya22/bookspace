@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 
 export const metadata = {
-  title: 'パスワードを忘れた方 | ちよプラブックスペース',
+  title: 'パスワードを忘れた方 | ちよプライブラリ',
   description: 'パスワードリセット用メールを送信',
 };
 

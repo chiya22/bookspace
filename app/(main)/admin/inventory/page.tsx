@@ -11,7 +11,7 @@ import { InventoryClearButton } from './InventoryClearButton';
 import { InventoryCheckForm } from './InventoryCheckForm';
 
 export const metadata = {
-  title: '棚卸 | ちよプラブックスペース',
+  title: '棚卸 | ちよプライブラリ',
   description: '在庫チェック・棚卸',
 };
 

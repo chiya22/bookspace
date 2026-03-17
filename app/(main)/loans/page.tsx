@@ -7,7 +7,7 @@ import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
 import { CoverImage } from '@/components/books/CoverImage';
 
 export const metadata = {
-  title: '貸出履歴 | ちよプラブックスペース',
+  title: '貸出履歴 | ちよプライブラリ',
   description: '自分の貸出・返却履歴',
 };
 
@@ -82,9 +82,8 @@ export default async function MyLoansPage({ searchParams }: Props) {
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
-                        isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
-                      }`}
+                      className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${isActive ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
+                        }`}
                     >
                       {isActive ? '貸出中' : '返却済み'}
                     </span>

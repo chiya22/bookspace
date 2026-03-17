@@ -10,7 +10,7 @@ import { CoverImage } from '@/components/books/CoverImage';
 import { BookSearchForm } from '@/components/books/BookSearchForm';
 
 export const metadata = {
-  title: '蔵書管理 | ちよプラブックスペース',
+  title: '蔵書管理 | ちよプライブラリ',
 };
 
 type Props = {

@@ -106,7 +106,7 @@ export async function registerLoan(
   ];
   await sendEmailAndLog({
     to: user.email,
-    subject: '【ちよプラブックスペース】貸出完了のご案内',
+    subject: '【ちよプライブラリ】貸出完了のご案内',
     text: loanBookLines.join('\n'),
     kind: 'loan',
     recipientUserId: userId,
@@ -176,7 +176,7 @@ export async function registerReturn(
   ];
   await sendEmailAndLog({
     to: user.email,
-    subject: '【ちよプラブックスペース】返却完了のご案内',
+    subject: '【ちよプライブラリ】返却完了のご案内',
     text: returnBookLines.join('\n'),
     kind: 'return',
     recipientUserId: userId,

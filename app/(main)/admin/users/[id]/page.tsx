@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
 export const metadata = {
-  title: '利用者詳細 | ちよプラブックスペース',
+  title: '利用者詳細 | ちよプライブラリ',
 };
 
 const roleLabels: Record<string, string> = {
