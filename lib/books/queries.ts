@@ -7,6 +7,7 @@ export type BookRow = {
   publisher: string;
   isbn: string;
   cover_image_path: string | null;
+  is_loanable: boolean;
 };
 
 /**
@@ -25,14 +26,14 @@ export async function searchBooks(
   if (!k) {
     const { data: rows } = await supabase
       .from('books')
-      .select('id, title, author, publisher, isbn, cover_image_path')
+      .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
       .order('created_at', { ascending: false });
     data = (rows ?? []) as BookRow[];
   } else {
     const pattern = `%${k}%`;
     const { data: rows } = await supabase
       .from('books')
-      .select('id, title, author, publisher, isbn, cover_image_path')
+      .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
       .or(`title.ilike.${pattern},author.ilike.${pattern},publisher.ilike.${pattern},isbn.ilike.${pattern}`)
       .order('created_at', { ascending: false });
     data = (rows ?? []) as BookRow[];
@@ -84,7 +85,7 @@ export async function getBookByIsbn(isbn: string): Promise<BookRow | null> {
   if (normalized !== trimmed) {
     const { data: data2 } = await supabase
       .from('books')
-      .select('id, title, author, publisher, isbn, cover_image_path')
+      .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
       .eq('isbn', trimmed)
       .maybeSingle();
     if (data2) return data2 as BookRow;

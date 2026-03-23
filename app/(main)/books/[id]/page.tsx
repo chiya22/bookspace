@@ -124,7 +124,14 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
           <div>
             <dt className="font-medium text-zinc-500">貸出状況</dt>
             <dd>
-              {isOnLoan ? (
+              {!book.is_loanable ? (
+                <span
+                  className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-600 border border-stone-200"
+                  aria-label="貸出対象外"
+                >
+                  貸出対象外
+                </span>
+              ) : isOnLoan ? (
                 <span
                   className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800"
                   aria-label="貸出中"

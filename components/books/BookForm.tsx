@@ -20,7 +20,7 @@ type BookFormProps = {
   returnQuery?: never;
 } | {
   mode: 'edit';
-  book: { id: string; title: string; author: string; publisher: string; isbn: string; cover_image_path: string | null };
+  book: { id: string; title: string; author: string; publisher: string; isbn: string; cover_image_path: string | null; is_loanable: boolean };
   currentCoverUrl: string | null;
   allTags: TagRow[];
   bookTagIds: string[];
@@ -158,6 +158,17 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
           required
           className="flex-1 rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
         />
+      </div>
+      <div className="flex gap-2">
+        <label className="w-24 shrink-0 text-xs font-medium text-zinc-700">ステータス</label>
+        <select
+          name="is_loanable"
+          defaultValue={book?.is_loanable === false ? 'false' : 'true'}
+          className="flex-1 rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+        >
+          <option value="true">貸出可能</option>
+          <option value="false">貸出対象外</option>
+        </select>
       </div>
       {mode === 'edit' && (
         <div className="flex flex-col gap-2">

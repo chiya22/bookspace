@@ -46,6 +46,7 @@ export async function registerLoan(
 
   const book = await getBookByIsbn(isbn);
   if (!book) return { error: '該当する蔵書が見つかりません。' };
+  if (!book.is_loanable) return { error: 'この書籍は貸出対象外です。' };
 
   const supabase = createSupabaseServerClient();
   type UserRow = { id: string; email: string; name: string };

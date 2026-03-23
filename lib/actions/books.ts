@@ -66,6 +66,7 @@ export async function createBook(
   const author = formData.get('author')?.toString()?.trim();
   const publisher = formData.get('publisher')?.toString()?.trim();
   const isbn = formData.get('isbn')?.toString()?.trim();
+  const is_loanable = formData.get('is_loanable')?.toString() !== 'false';
 
   if (!title || !author || !publisher || !isbn) {
     return { error: 'タイトル・著者・出版社・ISBNは必須です。' };
@@ -73,7 +74,7 @@ export async function createBook(
 
   const supabase = createSupabaseServerClient();
   const isbnNormalized = isbn.replace(/-/g, '');
-  const payload: BookInsert = { title, author, publisher, isbn: isbnNormalized };
+  const payload: BookInsert = { title, author, publisher, isbn: isbnNormalized, is_loanable };
   const { data: inserted, error } = await supabase
     .from('books')
     .insert(payload as never)
@@ -128,6 +129,7 @@ export async function updateBook(
   const author = formData.get('author')?.toString()?.trim();
   const publisher = formData.get('publisher')?.toString()?.trim();
   const isbn = formData.get('isbn')?.toString()?.trim();
+  const is_loanable = formData.get('is_loanable')?.toString() !== 'false';
 
   if (!title || !author || !publisher || !isbn) {
     return { error: 'タイトル・著者・出版社・ISBNは必須です。' };
@@ -165,6 +167,7 @@ export async function updateBook(
     author,
     publisher,
     isbn: isbnNormalized,
+    is_loanable,
     ...(coverImagePath !== null ? { cover_image_path: coverImagePath } : {}),
   };
   const { error } = await supabase.from('books').update(updatePayload as never).eq('id', id);

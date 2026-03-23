@@ -55,6 +55,7 @@ export interface Database {
           publisher: string;
           isbn: string;
           cover_image_path: string | null;
+          is_loanable: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -65,6 +66,7 @@ export interface Database {
           publisher: string;
           isbn: string;
           cover_image_path?: string | null;
+          is_loanable?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -75,6 +77,7 @@ export interface Database {
           publisher?: string;
           isbn?: string;
           cover_image_path?: string | null;
+          is_loanable?: boolean;
           created_at?: string;
           updated_at?: string;
         };
