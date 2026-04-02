@@ -28,26 +28,27 @@ export async function getCoverSignedUrl(path: string | null): Promise<string | n
 /**
  * 複数の表紙画像パスに対して署名付きURLを一括取得する。
  * Supabase Storage の createSignedUrls バッチAPIを使い、1回のHTTPコールで取得。
+ * unstable_cache はJSON シリアライズするため、Map ではなくプレーンオブジェクトを返す。
  */
-async function getCoverSignedUrlsBatchUncached(paths: string[]): Promise<Map<string, string>> {
+async function getCoverSignedUrlsBatchUncached(paths: string[]): Promise<Record<string, string>> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase.storage.from(BUCKET).createSignedUrls(paths, SIGNED_URL_EXPIRY_SEC);
-  const map = new Map<string, string>();
+  const result: Record<string, string> = {};
   for (const item of data ?? []) {
     if (item.path && item.signedUrl && !item.error) {
-      map.set(item.path, item.signedUrl);
+      result[item.path] = item.signedUrl;
     }
   }
-  return map;
+  return result;
 }
 
 /**
  * 複数の表紙画像パスに対して署名付きURLを一括取得する（キャッシュ付き）。
  * null を除外し、有効なパスだけを対象にする。
  */
-export async function getCoverSignedUrls(paths: (string | null)[]): Promise<Map<string, string>> {
+async function getCoverSignedUrls(paths: (string | null)[]): Promise<Record<string, string>> {
   const validPaths = [...new Set(paths.filter((p): p is string => p != null))];
-  if (validPaths.length === 0) return new Map();
+  if (validPaths.length === 0) return {};
   const sorted = [...validPaths].sort();
   return unstable_cache(
     () => getCoverSignedUrlsBatchUncached(sorted),
@@ -63,10 +64,10 @@ export async function getCoverSignedUrls(paths: (string | null)[]): Promise<Map<
 export async function resolveCoverUrls(
   books: { cover_image_path: string | null; isbn: string }[]
 ): Promise<(string | null)[]> {
-  const signedUrlMap = await getCoverSignedUrls(books.map((b) => b.cover_image_path));
+  const signedUrls = await getCoverSignedUrls(books.map((b) => b.cover_image_path));
   return books.map((book) => {
     if (book.cover_image_path) {
-      const signed = signedUrlMap.get(book.cover_image_path);
+      const signed = signedUrls[book.cover_image_path];
       if (signed) return signed;
     }
     return getNdlThumbnailUrl(book.isbn) || null;
