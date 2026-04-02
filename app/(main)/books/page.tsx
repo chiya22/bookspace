@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { searchBooks } from '@/lib/books/queries';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { resolveCoverUrls } from '@/lib/books/cover';
 import { getAllTags, getTagsByBookIds } from '@/lib/tags/queries';
 import { getSession } from '@/lib/auth';
 import { getFavoriteBookIds } from '@/lib/favorites/queries';
@@ -65,18 +65,14 @@ export default async function BooksPage({ searchParams }: Props) {
     getOnLoanBookIds(pagedBooks.map((b) => b.id)),
   ]);
 
-  const booksWithCovers = await Promise.all(
-    pagedBooks.map(async (book) => {
-      const uploaded = await getCoverSignedUrl(book.cover_image_path);
-      return {
-        ...book,
-        coverUrl: uploaded ?? (getNdlThumbnailUrl(book.isbn) || null),
-        tags: tagsByBookId.get(book.id) ?? [],
-        commentCount: commentCountsByBookId.get(book.id) ?? 0,
-        isOnLoan: onLoanBookIds.has(book.id),
-      };
-    })
-  );
+  const coverUrls = await resolveCoverUrls(pagedBooks);
+  const booksWithCovers = pagedBooks.map((book, i) => ({
+    ...book,
+    coverUrl: coverUrls[i],
+    tags: tagsByBookId.get(book.id) ?? [],
+    commentCount: commentCountsByBookId.get(book.id) ?? 0,
+    isOnLoan: onLoanBookIds.has(book.id),
+  }));
 
   const showFavoritesFilter = !!userId;
 

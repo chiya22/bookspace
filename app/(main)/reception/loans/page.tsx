@@ -10,7 +10,7 @@ import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
 import { LoanHistorySearchForm } from '@/components/reception/LoanHistorySearchForm';
 import { ReturnRequestByLoanButton } from '@/components/reception/ReturnRequestByLoanButton';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { resolveCoverUrls } from '@/lib/books/cover';
 import { CoverImage } from '@/components/books/CoverImage';
 
 export const metadata = {
@@ -47,18 +47,15 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
 
   const { loans: pagedLoans, totalCount } = await getAllLoansPaginated(filter, keyword, page, pageSize);
 
-  const [loansWithCovers, returnRequestSentAt] = await Promise.all([
-    Promise.all(
-      pagedLoans.map(async (loan) => {
-        const book = loan.books;
-        if (!book) return { ...loan, coverUrl: null as string | null };
-        const uploaded = await getCoverSignedUrl(book.cover_image_path);
-        const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
-        return { ...loan, coverUrl };
-      })
-    ),
+  const booksForCovers = pagedLoans.map((loan) => loan.books ?? { cover_image_path: null, isbn: '' });
+  const [coverUrls, returnRequestSentAt] = await Promise.all([
+    resolveCoverUrls(booksForCovers),
     getReturnRequestSentAtByLoanIds(pagedLoans.map((l) => l.id)),
   ]);
+  const loansWithCovers = pagedLoans.map((loan, i) => ({
+    ...loan,
+    coverUrl: coverUrls[i],
+  }));
 
   const loansWithReturnRequestInfo = loansWithCovers.map((loan) => ({
     ...loan,

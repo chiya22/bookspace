@@ -3,7 +3,7 @@ import { getLoansByUserIdPaginated } from '@/lib/loans/queries';
 import { getPageSize, parsePage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { resolveCoverUrls } from '@/lib/books/cover';
 import { CoverImage } from '@/components/books/CoverImage';
 
 export const metadata = {
@@ -27,15 +27,12 @@ export default async function MyLoansPage({ searchParams }: Props) {
   const page = parsePage(resolved);
   const { loans, totalCount } = await getLoansByUserIdPaginated(session.user.id, page, pageSize);
 
-  const loansWithCovers = await Promise.all(
-    loans.map(async (loan) => {
-      const book = loan.books;
-      if (!book) return { ...loan, coverUrl: null as string | null };
-      const uploaded = await getCoverSignedUrl(book.cover_image_path);
-      const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
-      return { ...loan, coverUrl };
-    })
-  );
+  const booksForCovers = loans.map((loan) => loan.books ?? { cover_image_path: null, isbn: '' });
+  const coverUrls = await resolveCoverUrls(booksForCovers);
+  const loansWithCovers = loans.map((loan, i) => ({
+    ...loan,
+    coverUrl: coverUrls[i],
+  }));
 
   return (
     <div>

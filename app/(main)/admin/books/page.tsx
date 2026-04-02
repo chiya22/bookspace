@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { searchBooks } from '@/lib/books/queries';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { resolveCoverUrls } from '@/lib/books/cover';
 import { getAllTags, getTagsByBookIds } from '@/lib/tags/queries';
 import { getOnLoanBookIds } from '@/lib/loans/queries';
 import { getPageSize, parsePage } from '@/lib/pagination';
@@ -39,17 +39,13 @@ export default async function AdminBooksPage({ searchParams }: Props) {
     getOnLoanBookIds(pagedBooks.map((b) => b.id)),
   ]);
 
-  const withCovers = await Promise.all(
-    pagedBooks.map(async (b) => {
-      const uploaded = await getCoverSignedUrl(b.cover_image_path);
-      return {
-        ...b,
-        coverUrl: uploaded ?? (getNdlThumbnailUrl(b.isbn) || null),
-        tags: tagsByBookId.get(b.id) ?? [],
-        isOnLoan: onLoanBookIds.has(b.id),
-      };
-    })
-  );
+  const coverUrls = await resolveCoverUrls(pagedBooks);
+  const withCovers = pagedBooks.map((b, i) => ({
+    ...b,
+    coverUrl: coverUrls[i],
+    tags: tagsByBookId.get(b.id) ?? [],
+    isOnLoan: onLoanBookIds.has(b.id),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
