@@ -1,12 +1,11 @@
 import { Suspense } from 'react';
 import { getSession } from '@/lib/auth';
 import {
-  getAllLoans,
-  filterLoansByKeyword,
+  getAllLoansPaginated,
   getReturnRequestSentAtByLoanIds,
   type LoanHistoryFilter,
 } from '@/lib/loans/queries';
-import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
+import { getPageSize, parsePage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
 import { LoanHistorySearchForm } from '@/components/reception/LoanHistorySearchForm';
@@ -46,10 +45,7 @@ export default async function ReceptionLoansPage({ searchParams }: PageProps) {
   const pageSize = getPageSize();
   const page = parsePage(resolved);
 
-  const allLoans = await getAllLoans(filter);
-  const loansFiltered = filterLoansByKeyword(allLoans, keyword);
-  const totalCount = loansFiltered.length;
-  const pagedLoans = sliceForPage(loansFiltered, page, pageSize);
+  const { loans: pagedLoans, totalCount } = await getAllLoansPaginated(filter, keyword, page, pageSize);
 
   const [loansWithCovers, returnRequestSentAt] = await Promise.all([
     Promise.all(

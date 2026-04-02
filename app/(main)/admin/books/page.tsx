@@ -3,7 +3,7 @@ import { searchBooks } from '@/lib/books/queries';
 import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
 import { getAllTags, getTagsByBookIds } from '@/lib/tags/queries';
 import { getOnLoanBookIds } from '@/lib/loans/queries';
-import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
+import { getPageSize, parsePage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
 import { CoverImage } from '@/components/books/CoverImage';
@@ -29,13 +29,11 @@ export default async function AdminBooksPage({ searchParams }: Props) {
   const pageSize = getPageSize();
   const page = parsePage(resolved);
 
-  const [books, allTags] = await Promise.all([
-    searchBooks(keyword, tagIds.length > 0 ? tagIds : null),
+  const [{ books: pagedBooks, totalCount }, allTags] = await Promise.all([
+    searchBooks(keyword, tagIds.length > 0 ? tagIds : null, page, pageSize),
     getAllTags(),
   ]);
 
-  const totalCount = books.length;
-  const pagedBooks = sliceForPage(books, page, pageSize);
   const [tagsByBookId, onLoanBookIds] = await Promise.all([
     getTagsByBookIds(pagedBooks.map((b) => b.id)),
     getOnLoanBookIds(pagedBooks.map((b) => b.id)),

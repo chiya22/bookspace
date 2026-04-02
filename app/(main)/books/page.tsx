@@ -6,7 +6,7 @@ import { getSession } from '@/lib/auth';
 import { getFavoriteBookIds } from '@/lib/favorites/queries';
 import { getCommentCountsByBookIds } from '@/lib/comments/queries';
 import { getOnLoanBookIds } from '@/lib/loans/queries';
-import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
+import { getPageSize, parsePage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import Link from 'next/link';
 import { BookSearchForm } from '@/components/books/BookSearchForm';
@@ -35,21 +35,29 @@ export default async function BooksPage({ searchParams }: Props) {
   const pageSize = getPageSize();
   const page = parsePage(resolved);
 
-  const [books, allTags, session] = await Promise.all([
-    searchBooks(keyword, tagIds.length > 0 ? tagIds : null),
+  const [allTags, session] = await Promise.all([
     getAllTags(),
     getSession(),
   ]);
 
   const userId = session?.user?.id;
   const favoriteBookIds = userId ? await getFavoriteBookIds(userId) : new Set<string>();
-  let filteredBooks = books;
-  if (favoritesOnly && userId) {
-    filteredBooks = books.filter((b) => favoriteBookIds.has(b.id));
-  }
 
-  const totalCount = filteredBooks.length;
-  const pagedBooks = sliceForPage(filteredBooks, page, pageSize);
+  // お気に入りフィルタ: DB側で絞り込むために book ID リストを渡す
+  const restrictToBookIds =
+    favoritesOnly && userId && favoriteBookIds.size > 0
+      ? [...favoriteBookIds]
+      : favoritesOnly
+        ? [] // お気に入りが0件の場合は結果なし
+        : null;
+
+  const { books: pagedBooks, totalCount } = await searchBooks(
+    keyword,
+    tagIds.length > 0 ? tagIds : null,
+    page,
+    pageSize,
+    restrictToBookIds
+  );
 
   const [tagsByBookId, commentCountsByBookId, onLoanBookIds] = await Promise.all([
     getTagsByBookIds(pagedBooks.map((b) => b.id)),
