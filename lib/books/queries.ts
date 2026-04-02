@@ -63,7 +63,7 @@ export async function getBookById(id: string): Promise<BookRow | null> {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase
     .from('books')
-    .select('id, title, author, publisher, isbn, cover_image_path')
+    .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
     .eq('id', id)
     .single();
   return data as BookRow | null;
@@ -77,7 +77,7 @@ export async function getBookByIsbn(isbn: string): Promise<BookRow | null> {
   // 蔵書はハイフンあり/なしのどちらでも登録されている可能性があるため両方で検索
   const { data } = await supabase
     .from('books')
-    .select('id, title, author, publisher, isbn, cover_image_path')
+    .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
     .eq('isbn', normalized)
     .maybeSingle();
   if (data) return data as BookRow;
@@ -93,7 +93,7 @@ export async function getBookByIsbn(isbn: string): Promise<BookRow | null> {
 
   const { data: data3 } = await supabase
     .from('books')
-    .select('id, title, author, publisher, isbn, cover_image_path')
+    .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
     .ilike('isbn', `%${normalized}%`)
     .limit(1)
     .maybeSingle();

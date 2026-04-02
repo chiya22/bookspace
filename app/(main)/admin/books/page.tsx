@@ -103,7 +103,7 @@ export default async function AdminBooksPage({ searchParams }: Props) {
                         貸出中
                       </span>
                     )}
-                    {!book.is_loanable && (
+                    {book.is_loanable === false && (
                       <span
                         className="ml-1.5 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 border border-stone-200"
                         aria-label="貸出対象外"
