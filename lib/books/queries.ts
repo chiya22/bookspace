@@ -12,51 +12,82 @@ export type BookRow = {
 
 /**
  * 蔵書を検索する（タイトル・著者・出版社・ISBN の前後部分一致）。
- * keyword が空の場合は全件取得（ページネーションは未対応）。
- * tagIds を指定した場合、それらすべてのタグが付いた書籍のみに絞り込む（AND条件）。
+ * DB レベルでページネーション・タグ絞り込みを行い、結果と総件数を返す。
+ * restrictToBookIds を指定した場合、そのIDリストに含まれる書籍のみに絞り込む（お気に入りフィルタ等）。
  */
 export async function searchBooks(
   keyword: string,
-  tagIds?: string[] | null
-): Promise<BookRow[]> {
+  tagIds: string[] | null,
+  page: number,
+  pageSize: number,
+  restrictToBookIds?: string[] | null
+): Promise<{ books: BookRow[]; totalCount: number }> {
   const supabase = createSupabaseServerClient();
   const k = keyword.trim();
-  let data: BookRow[];
 
-  if (!k) {
+  // タグ絞り込み: 1クエリで全タグ分取得し、AND条件で絞り込む
+  const tagIdList = tagIds?.filter((id) => id?.trim()) ?? [];
+  let tagFilteredBookIds: string[] | null = null;
+  if (tagIdList.length > 0) {
     const { data: rows } = await supabase
-      .from('books')
-      .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
-      .order('created_at', { ascending: false });
-    data = (rows ?? []) as BookRow[];
-  } else {
+      .from('book_tags')
+      .select('book_id, tag_id')
+      .in('tag_id', tagIdList);
+    const bookTagCounts = new Map<string, number>();
+    for (const row of rows ?? []) {
+      const r = row as { book_id: string; tag_id: string };
+      bookTagCounts.set(r.book_id, (bookTagCounts.get(r.book_id) ?? 0) + 1);
+    }
+    tagFilteredBookIds = [...bookTagCounts.entries()]
+      .filter(([, count]) => count === tagIdList.length)
+      .map(([bookId]) => bookId);
+    if (tagFilteredBookIds.length === 0) {
+      return { books: [], totalCount: 0 };
+    }
+  }
+
+  // restrictToBookIds とタグ絞り込みの両方がある場合は交差を取る
+  let finalBookIdFilter: string[] | null = null;
+  if (tagFilteredBookIds && restrictToBookIds) {
+    const restrictSet = new Set(restrictToBookIds);
+    finalBookIdFilter = tagFilteredBookIds.filter((id) => restrictSet.has(id));
+    if (finalBookIdFilter.length === 0) {
+      return { books: [], totalCount: 0 };
+    }
+  } else if (tagFilteredBookIds) {
+    finalBookIdFilter = tagFilteredBookIds;
+  } else if (restrictToBookIds) {
+    finalBookIdFilter = restrictToBookIds;
+    if (finalBookIdFilter.length === 0) {
+      return { books: [], totalCount: 0 };
+    }
+  }
+
+  let query = supabase
+    .from('books')
+    .select('id, title, author, publisher, isbn, cover_image_path, is_loanable', { count: 'exact' });
+
+  if (k) {
     const pattern = `%${k}%`;
-    const { data: rows } = await supabase
-      .from('books')
-      .select('id, title, author, publisher, isbn, cover_image_path, is_loanable')
-      .or(`title.ilike.${pattern},author.ilike.${pattern},publisher.ilike.${pattern},isbn.ilike.${pattern}`)
-      .order('created_at', { ascending: false });
-    data = (rows ?? []) as BookRow[];
-  }
-
-  const ids = tagIds?.filter((id) => id?.trim()) ?? [];
-  if (ids.length > 0) {
-    const sets = await Promise.all(
-      ids.map(async (tagId) => {
-        const { data: rows } = await supabase
-          .from('book_tags')
-          .select('book_id')
-          .eq('tag_id', tagId);
-        return new Set((rows ?? []).map((r) => (r as { book_id: string }).book_id));
-      })
+    query = query.or(
+      `title.ilike.${pattern},author.ilike.${pattern},publisher.ilike.${pattern},isbn.ilike.${pattern}`
     );
-    const intersection = sets.reduce((acc, set) => {
-      return new Set([...acc].filter((id) => set.has(id)));
-    });
-    data = data.filter((b) => intersection.has(b.id));
   }
 
-  return data;
+  if (finalBookIdFilter) {
+    query = query.in('id', finalBookIdFilter);
+  }
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, count } = await query
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  return {
+    books: (data ?? []) as BookRow[],
+    totalCount: count ?? 0,
+  };
 }
 
 export async function getBookById(id: string): Promise<BookRow | null> {

@@ -97,6 +97,64 @@ export async function getAllLoans(
 }
 
 /**
+ * 全貸出履歴をDBレベルでページネーション付きで取得（司書・管理者用）。貸出日降順。
+ * キーワード指定時はJOIN先テーブルの横断検索が必要なため全件取得してJSで絞り込む。
+ * キーワードなしの場合はDB側でページネーションを行い高速化する。
+ */
+export async function getAllLoansPaginated(
+  filter: LoanHistoryFilter,
+  keyword: string,
+  page: number,
+  pageSize: number
+): Promise<{ loans: LoanWithBookAndUser[]; totalCount: number }> {
+  const k = keyword.trim();
+
+  // キーワード指定時はJOIN先の検索が必要なため全件取得→JS絞り込み→スライス
+  if (k) {
+    const allLoans = await getAllLoans(filter);
+    const filtered = filterLoansByKeyword(allLoans, k);
+    const from = (page - 1) * pageSize;
+    return {
+      loans: filtered.slice(from, from + pageSize),
+      totalCount: filtered.length,
+    };
+  }
+
+  // キーワードなし: DB側ページネーション
+  const supabase = createSupabaseServerClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase
+    .from('loans')
+    .select(
+      `
+      id,
+      lent_at,
+      returned_at,
+      user_id,
+      book_id,
+      books ( id, title, author, isbn, cover_image_path ),
+      users ( id, name, email )
+    `,
+      { count: 'exact' }
+    )
+    .order('lent_at', { ascending: false });
+
+  if (filter === 'active') {
+    q = q.is('returned_at', null);
+  } else if (filter === 'returned') {
+    q = q.not('returned_at', 'is', null);
+  }
+
+  const { data, count } = await q.range(from, to);
+  return {
+    loans: (data ?? []) as LoanWithBookAndUser[],
+    totalCount: count ?? 0,
+  };
+}
+
+/**
  * 貸出履歴一覧をキーワードで絞り込む（利用者名・メール・書籍タイトル・著者）。
  */
 /**
