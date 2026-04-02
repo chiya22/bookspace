@@ -26,6 +26,54 @@ export async function getCoverSignedUrl(path: string | null): Promise<string | n
 }
 
 /**
+ * 複数の表紙画像パスに対して署名付きURLを一括取得する。
+ * Supabase Storage の createSignedUrls バッチAPIを使い、1回のHTTPコールで取得。
+ */
+async function getCoverSignedUrlsBatchUncached(paths: string[]): Promise<Map<string, string>> {
+  const supabase = createSupabaseServerClient();
+  const { data } = await supabase.storage.from(BUCKET).createSignedUrls(paths, SIGNED_URL_EXPIRY_SEC);
+  const map = new Map<string, string>();
+  for (const item of data ?? []) {
+    if (item.path && item.signedUrl && !item.error) {
+      map.set(item.path, item.signedUrl);
+    }
+  }
+  return map;
+}
+
+/**
+ * 複数の表紙画像パスに対して署名付きURLを一括取得する（キャッシュ付き）。
+ * null を除外し、有効なパスだけを対象にする。
+ */
+export async function getCoverSignedUrls(paths: (string | null)[]): Promise<Map<string, string>> {
+  const validPaths = [...new Set(paths.filter((p): p is string => p != null))];
+  if (validPaths.length === 0) return new Map();
+  const sorted = [...validPaths].sort();
+  return unstable_cache(
+    () => getCoverSignedUrlsBatchUncached(sorted),
+    ['cover-signed-urls-batch', ...sorted],
+    { revalidate: CACHE_REVALIDATE_SEC, tags: ['book-covers'] }
+  )();
+}
+
+/**
+ * 書籍リストの表紙URLを一括解決する。
+ * Supabase Storage の署名URL をバッチ取得し、ない場合は NDL サムネイルにフォールバック。
+ */
+export async function resolveCoverUrls(
+  books: { cover_image_path: string | null; isbn: string }[]
+): Promise<(string | null)[]> {
+  const signedUrlMap = await getCoverSignedUrls(books.map((b) => b.cover_image_path));
+  return books.map((book) => {
+    if (book.cover_image_path) {
+      const signed = signedUrlMap.get(book.cover_image_path);
+      if (signed) return signed;
+    }
+    return getNdlThumbnailUrl(book.isbn) || null;
+  });
+}
+
+/**
  * 国会図書館の書影を表示するためのURLを返す。
  * 自前の表紙画像がない場合のフォールバック用。同一オリジンのプロキシ経由で配信するため、
  * ブラウザでの CORB ブロックを避けられる。ISBN に該当する書影が存在しない場合は 404 になる。

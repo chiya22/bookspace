@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { qrCodeToDataUrl } from '@/lib/qr/toDataUrl';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { resolveCoverUrls } from '@/lib/books/cover';
 import { getPageSize, parsePage, sliceForPage } from '@/lib/pagination';
 import { PaginationNav } from '@/components/PaginationNav';
 import { CoverImage } from '@/components/books/CoverImage';
@@ -46,18 +46,15 @@ export default async function TopPage({ searchParams }: Props) {
   const totalCount = allLoans.length;
   const pagedLoans = sliceForPage(allLoans, page, pageSize);
 
-  const [loansWithCovers, qrDataUrl] = await Promise.all([
-    Promise.all(
-      pagedLoans.map(async (loan) => {
-        const book = loan.books;
-        if (!book) return { ...loan, coverUrl: null as string | null };
-        const uploaded = await getCoverSignedUrl(book.cover_image_path);
-        const coverUrl = uploaded ?? (getNdlThumbnailUrl(book.isbn) || null);
-        return { ...loan, coverUrl };
-      })
-    ),
+  const booksForCovers = pagedLoans.map((loan) => loan.books ?? { cover_image_path: null, isbn: '' });
+  const [coverUrls, qrDataUrl] = await Promise.all([
+    resolveCoverUrls(booksForCovers),
     user?.qr_code_data != null ? qrCodeToDataUrl(user.qr_code_data) : Promise.resolve(null),
   ]);
+  const loansWithCovers = pagedLoans.map((loan, i) => ({
+    ...loan,
+    coverUrl: coverUrls[i],
+  }));
 
   return (
     <div className="flex flex-col gap-8">
