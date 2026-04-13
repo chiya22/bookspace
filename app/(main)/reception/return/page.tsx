@@ -1,18 +1,33 @@
 import { registerReturn } from '@/lib/actions/loans';
 import { LoanReturnForm } from '@/components/reception/LoanReturnForm';
+import { getSession } from '@/lib/auth';
+import { getAllUsers } from '@/lib/users/queries';
 
 export const metadata = {
-  title: '返却処理 | ちよプライブラリ',
+  title: '返却処理 | よブブラ',
 };
 
-export default function ReceptionReturnPage() {
+export default async function ReceptionReturnPage() {
+  const session = await getSession();
+  const isAdmin = session?.user?.role === 'admin';
+
+  const users = isAdmin
+    ? (await getAllUsers()).filter((u) => !u.disabled).map((u) => ({
+        id: u.id,
+        name: u.name,
+        displayName: u.display_name,
+      }))
+    : undefined;
+
   return (
     <div>
       <p className="text-sm text-zinc-600">
-        ISBNと会員証QR（スキャン結果）を入力して返却を登録します。
+        {isAdmin
+          ? 'ISBNを入力し、利用者を選択して返却を登録します。'
+          : 'ISBNと会員証QR（スキャン結果）を入力して返却を登録します。'}
       </p>
       <div className="mt-6">
-        <LoanReturnForm mode="return" action={registerReturn} />
+        <LoanReturnForm mode="return" action={registerReturn} isAdmin={isAdmin} users={users} />
       </div>
     </div>
   );

@@ -45,5 +45,5 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   // 認証チェックの対象外: API・Next 内部・favicon・public の静的ファイル（ロゴなど）
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|company_logo\\.svg).*)'],
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|logo\\.svg).*)'],
 };

@@ -9,11 +9,11 @@ export default function AuthLayout({
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-100 px-4">
       <div className="mb-8 flex justify-center">
         <Image
-          src="/company_logo.svg"
+          src="/logo.svg"
           alt="ロゴ"
-          width={300}
+          width={400}
           height={300}
-          className="h-28 w-auto max-w-[200px] object-contain object-center"
+          className="h-28 w-auto max-w-[250px] object-contain object-center"
           unoptimized
         />
       </div>

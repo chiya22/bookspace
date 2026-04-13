@@ -1,15 +1,20 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
+type UserOption = {
+  id: string;
+  name: string;
+  displayName: string | null;
+};
+
 type Props = {
-  mode: 'loan';
+  mode: 'loan' | 'return';
   action: (prev: { error?: string; success?: string }, fd: FormData) => Promise<{ error?: string; success?: string }>;
-} | {
-  mode: 'return';
-  action: (prev: { error?: string; success?: string }, fd: FormData) => Promise<{ error?: string; success?: string }>;
+  isAdmin?: boolean;
+  users?: UserOption[];
 };
 
 function SubmitButton({ isLoan }: { isLoan: boolean }) {
@@ -28,7 +33,48 @@ function SubmitButton({ isLoan }: { isLoan: boolean }) {
   );
 }
 
-export function LoanReturnForm({ mode, action }: Props) {
+function UserSelect({ users }: { users: UserOption[] }) {
+  const [filter, setFilter] = useState('');
+  const filtered = filter
+    ? users.filter((u) => {
+        const label = u.displayName ?? u.name;
+        return label.includes(filter) || u.name.includes(filter);
+      })
+    : users;
+
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-zinc-700">利用者を選択</label>
+      <input
+        type="text"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder="名前で絞り込み…"
+        className="mb-1.5 w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+      />
+      <select
+        name="qr_data"
+        required
+        className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
+        defaultValue=""
+      >
+        <option value="" disabled>
+          -- 利用者を選択してください --
+        </option>
+        {filtered.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.displayName ?? u.name}（{u.name}）
+          </option>
+        ))}
+      </select>
+      {filter && filtered.length === 0 && (
+        <p className="mt-1 text-xs text-zinc-500">該当する利用者が見つかりません。</p>
+      )}
+    </div>
+  );
+}
+
+export function LoanReturnForm({ mode, action, isAdmin, users }: Props) {
   const [state, formAction] = useActionState(action, {});
   const isbnInputRef = useRef<HTMLInputElement>(null);
   const qrDataRef = useRef<HTMLTextAreaElement>(null);
@@ -65,29 +111,31 @@ export function LoanReturnForm({ mode, action }: Props) {
           className="w-full rounded border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900"
           onChange={(e) => {
             const digits = e.target.value.replace(/\D/g, '');
-            if (digits.length >= 13) {
-              // バーコードリーダーは高速で入力するため、即座にフォーカスを移すと
-              // 末尾1桁が次のフィールドに入る。短い遅延で全桁をISBN欄に収めてから移す。
+            if (digits.length >= 13 && !isAdmin) {
               setTimeout(() => qrDataRef.current?.focus(), 100);
             }
           }}
         />
       </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-zinc-700">
-          会員証QRコード（スキャン結果）
-        </label>
-        <textarea
-          ref={qrDataRef}
-          name="qr_data"
-          rows={3}
-          placeholder='{"userId":"...","name":"..."} の形式でスキャン結果を貼り付けてください'
-          className="w-full rounded border border-zinc-300 px-3 py-2 font-mono text-[13px] text-zinc-900"
-        />
-        <p className="mt-1 text-xs text-zinc-500">
-          QRスキャンで取得した文字列をそのまま貼り付けるか、利用者IDのみを入力してください。
-        </p>
-      </div>
+      {isAdmin && users ? (
+        <UserSelect users={users} />
+      ) : (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-700">
+            会員証QRコード（スキャン結果）
+          </label>
+          <textarea
+            ref={qrDataRef}
+            name="qr_data"
+            rows={3}
+            placeholder='{"userId":"...","name":"..."} の形式でスキャン結果を貼り付けてください'
+            className="w-full rounded border border-zinc-300 px-3 py-2 font-mono text-[13px] text-zinc-900"
+          />
+          <p className="mt-1 text-xs text-zinc-500">
+            QRスキャンで取得した文字列をそのまま貼り付けるか、利用者IDのみを入力してください。
+          </p>
+        </div>
+      )}
       <SubmitButton isLoan={isLoan} />
     </form>
   );
