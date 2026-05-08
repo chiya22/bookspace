@@ -109,6 +109,10 @@ export default async function AdminInventoryPage({ searchParams }: Props) {
                         <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
                           貸出中
                         </span>
+                      ) : book.status === 'not_loanable' ? (
+                        <span className="rounded bg-rose-100 px-2 py-0.5 text-xs text-rose-800">
+                          貸出対象外
+                        </span>
                       ) : (
                         <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
                           在庫

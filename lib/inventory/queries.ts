@@ -5,7 +5,7 @@ export type BookInventoryRow = {
   title: string;
   author: string;
   isbn: string;
-  status: 'available' | 'loaned';
+  status: 'available' | 'loaned' | 'not_loanable';
   borrowedBy?: string;
 };
 
@@ -16,7 +16,7 @@ export async function getBooksWithLoanStatus(): Promise<BookInventoryRow[]> {
   const supabase = createSupabaseServerClient();
   const { data: books } = await supabase
     .from('books')
-    .select('id, title, author, isbn')
+    .select('id, title, author, isbn, is_loanable')
     .order('title');
   const { data: activeLoans } = await supabase
     .from('loans')
@@ -31,14 +31,26 @@ export async function getBooksWithLoanStatus(): Promise<BookInventoryRow[]> {
   }
 
   return (books ?? []).map((b) => {
-    const book = b as { id: string; title: string; author: string; isbn: string };
+    const book = b as {
+      id: string;
+      title: string;
+      author: string;
+      isbn: string;
+      is_loanable?: boolean | null;
+    };
     const borrowedBy = loanByBookId.get(book.id);
+    const status =
+      book.is_loanable === false
+        ? ('not_loanable' as const)
+        : borrowedBy
+          ? ('loaned' as const)
+          : ('available' as const);
     return {
       id: book.id,
       title: book.title,
       author: book.author,
       isbn: book.isbn,
-      status: borrowedBy ? ('loaned' as const) : ('available' as const),
+      status,
       borrowedBy,
     };
   });
