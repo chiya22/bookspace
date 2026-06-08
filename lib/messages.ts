@@ -32,7 +32,8 @@ export const messages = {
   // 業務ルール
   passwordMinLength: 'パスワードは8文字以上にしてください。',
   bookOnLoan: 'この書籍は現在貸出中です。',
-  userAlreadyHasLoan: 'この利用者は既に1冊貸出中です。',
+  userLoanLimitReached: (max: number) =>
+    `この利用者は貸出上限（${max}冊）に達しています。`,
   scanQrOrEnterUserId: '会員証QRコードをスキャンするか、利用者IDを入力してください。',
 
   // 操作失敗（汎用）

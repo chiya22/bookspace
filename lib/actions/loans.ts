@@ -6,6 +6,8 @@ import { getBookByIsbn } from '@/lib/books/queries';
 import { parseQrCodeData } from '@/lib/qr/generate';
 import { sendEmailAndLog } from '@/lib/mail/send';
 import { revalidatePath } from 'next/cache';
+import { MAX_ACTIVE_LOANS_PER_USER } from '@/lib/loans/constants';
+import { messages } from '@/lib/messages';
 
 export type LoanState = { error?: string; success?: string };
 export type ReturnState = { error?: string; success?: string };
@@ -68,14 +70,14 @@ export async function registerLoan(
     .maybeSingle();
   if (bookOnLoan) return { error: 'この書籍は現在貸出中です。' };
 
-  const { data: existingLoan } = await supabase
+  const { count: activeLoanCount } = await supabase
     .from('loans')
-    .select('id')
+    .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
-    .is('returned_at', null)
-    .limit(1)
-    .maybeSingle();
-  if (existingLoan) return { error: 'この利用者は既に1冊貸出中です。' };
+    .is('returned_at', null);
+  if ((activeLoanCount ?? 0) >= MAX_ACTIVE_LOANS_PER_USER) {
+    return { error: messages.userLoanLimitReached(MAX_ACTIVE_LOANS_PER_USER) };
+  }
 
   const { error } = await supabase.from('loans').insert({
     user_id: userId,
