@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getBookById } from '@/lib/books/queries';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { getCoverSignedUrl, getCoverFallbackUrl } from '@/lib/books/cover';
 import { getTagsByBookId } from '@/lib/tags/queries';
 import { getCommentsByBookId } from '@/lib/comments/queries';
 import { getSession } from '@/lib/auth';
@@ -69,7 +69,7 @@ export default async function BookDetailPage({ params, searchParams }: Props) {
     getOnLoanBookIds([id]),
   ]);
   const isOnLoan = onLoanBookIds.has(id);
-  const coverUrl = uploadedCoverUrl ?? (getNdlThumbnailUrl(book.isbn) || null);
+  const coverUrl = uploadedCoverUrl ?? (getCoverFallbackUrl(book.isbn) || null);
   const isStaff = session?.user?.role === 'librarian' || session?.user?.role === 'admin';
   const userId = session?.user?.id;
   const showFavorites = !fromAdmin && userId != null;

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createBook, updateBook, type CreateBookState } from '@/lib/actions/books';
 import { NdlLookup } from './NdlLookup';
 import { CoverImage } from './CoverImage';
-import { RefetchNdlCoverButton } from './RefetchNdlCoverButton';
+import { RefetchCoverButton } from './RefetchCoverButton';
 
 type TagRow = { id: string; name: string };
 
@@ -191,14 +191,16 @@ export function BookForm({ mode, book, currentCoverUrl = null, allTags = [], boo
               />
               <p className="text-xs text-zinc-500">画像を選択すると、保存時に表紙が差し替わります。</p>
               {book.isbn && (
-                <RefetchNdlCoverButton bookId={book.id} />
+                <RefetchCoverButton bookId={book.id} />
               )}
             </div>
           </div>
         </div>
       )}
       {mode === 'create' && (
-        <p className="text-sm text-zinc-500">表紙は国会図書館の書影を自動で表示します。登録後、編集画面でアップロード画像に差し替えできます。</p>
+        <p className="text-sm text-zinc-500">
+          表紙は Google Books から自動取得します（取得できない場合があります）。登録後、編集画面でアップロード画像に差し替えできます。
+        </p>
       )}
       {(mode === 'edit' || mode === 'create') && (
         <div className="flex flex-col gap-3">

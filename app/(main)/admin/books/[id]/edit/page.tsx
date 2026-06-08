@@ -1,5 +1,5 @@
 import { getBookById } from '@/lib/books/queries';
-import { getCoverSignedUrl, getNdlThumbnailUrl } from '@/lib/books/cover';
+import { getCoverSignedUrl, getCoverFallbackUrl } from '@/lib/books/cover';
 import { getAllTags, getTagIdsByBookId } from '@/lib/tags/queries';
 import { notFound } from 'next/navigation';
 import { BookForm } from '@/components/books/BookForm';
@@ -43,7 +43,7 @@ export default async function AdminBooksEditPage({ params, searchParams }: Props
     getAllTags(),
     getTagIdsByBookId(id),
   ]);
-  const coverDisplayUrl = uploadedCoverUrl ?? (book.isbn ? getNdlThumbnailUrl(book.isbn) : null);
+  const coverDisplayUrl = uploadedCoverUrl ?? (book.isbn ? getCoverFallbackUrl(book.isbn) : null);
   const returnQuery = buildReturnQuery(resolvedSearch);
 
   return (

@@ -59,7 +59,7 @@ async function getCoverSignedUrls(paths: (string | null)[]): Promise<Record<stri
 
 /**
  * 書籍リストの表紙URLを一括解決する。
- * Supabase Storage の署名URL をバッチ取得し、ない場合は NDL サムネイルにフォールバック。
+ * Supabase Storage の署名URL をバッチ取得し、ない場合は Google Books プロキシにフォールバック。
  */
 export async function resolveCoverUrls(
   books: { cover_image_path: string | null; isbn: string }[]
@@ -70,18 +70,15 @@ export async function resolveCoverUrls(
       const signed = signedUrls[book.cover_image_path];
       if (signed) return signed;
     }
-    return getNdlThumbnailUrl(book.isbn) || null;
+    return getCoverFallbackUrl(book.isbn) || null;
   });
 }
 
 /**
- * 国会図書館の書影を表示するためのURLを返す。
- * 自前の表紙画像がない場合のフォールバック用。同一オリジンのプロキシ経由で配信するため、
- * ブラウザでの CORB ブロックを避けられる。ISBN に該当する書影が存在しない場合は 404 になる。
- * @see https://ndlsearch.ndl.go.jp/help/api/thumbnail
- * @see docs/ndl-cover-corb.md
+ * 自前の表紙画像がない場合のフォールバック用 URL。
+ * 同一オリジンの Google Books プロキシ経由で配信する。
  */
-export function getNdlThumbnailUrl(isbn: string): string {
+export function getCoverFallbackUrl(isbn: string): string {
   const normalized = isbn.replace(/-/g, '');
-  return normalized ? `/api/cover/ndl?isbn=${encodeURIComponent(normalized)}` : '';
+  return normalized ? `/api/cover/google?isbn=${encodeURIComponent(normalized)}` : '';
 }

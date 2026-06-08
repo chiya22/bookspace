@@ -6,43 +6,9 @@ import { findOrCreateTagByName, setBookTags } from '@/lib/tags/queries';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Database } from '@/types/database';
-
-const COVER_BUCKET = 'book-covers';
-// 2024年1月のNDLサーチリニューアルでURL形式変更。ndlsearch ドメイン・末尾 .jpg 必須。
-const NDL_THUMBNAIL_BASE = 'https://ndlsearch.ndl.go.jp/thumbnail/';
-const NDL_FETCH_TIMEOUT_MS = 8000;
+import { COVER_BUCKET, fetchAndSaveGoogleBooksCover } from '@/lib/books/cover-fetch';
 
 type BookInsert = Database['public']['Tables']['books']['Insert'];
-
-/**
- * 国会図書館の書影を取得して Storage にアップロードし、保存したパスを返す。失敗時は null。
- */
-async function fetchAndSaveNdlCover(
-  supabase: ReturnType<typeof createSupabaseServerClient>,
-  bookId: string,
-  isbnNormalized: string
-): Promise<string | null> {
-  try {
-    const res = await fetch(`${NDL_THUMBNAIL_BASE}${isbnNormalized}.jpg`, {
-      signal: AbortSignal.timeout(NDL_FETCH_TIMEOUT_MS),
-      headers: { 'User-Agent': 'Bookspace/1.0' },
-    });
-    if (!res.ok) return null;
-    const contentType = res.headers.get('Content-Type') ?? 'image/jpeg';
-    if (!contentType.startsWith('image/')) return null;
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    if (bytes.length === 0) return null;
-    const ext = contentType.includes('png') ? '.png' : '.jpg';
-    const storagePath = `${bookId}${ext}`;
-    const { error } = await supabase.storage
-      .from(COVER_BUCKET)
-      .upload(storagePath, bytes, { upsert: true, contentType: contentType.split(';')[0]?.trim() || 'image/jpeg' });
-    if (error) return null;
-    return storagePath;
-  } catch {
-    return null;
-  }
-}
 
 function assertAdmin() {
   // 呼び出し元で getSession() して role を確認したうえで呼ぶ想定。二重チェック用。
@@ -88,7 +54,7 @@ export async function createBook(
 
   const bookId = (inserted as { id: string } | null)?.id;
   if (!bookId) return { error: '登録に失敗しました。' };
-  const coverPath = await fetchAndSaveNdlCover(supabase, bookId, isbnNormalized);
+  const coverPath = await fetchAndSaveGoogleBooksCover(supabase, bookId, isbnNormalized);
   if (coverPath) {
     await supabase.from('books').update({ cover_image_path: coverPath } as never).eq('id', bookId);
   }
@@ -198,9 +164,9 @@ export async function updateBook(
   redirect(listPath);
 }
 
-export type RefetchNdlCoverState = { error?: string; success?: boolean; notFound?: boolean };
+export type RefetchCoverState = { error?: string; success?: boolean; notFound?: boolean };
 
-export async function refetchNdlCover(bookId: string): Promise<RefetchNdlCoverState> {
+export async function refetchCover(bookId: string): Promise<RefetchCoverState> {
   const session = await getSession();
   if (!session?.user || (session.user.role !== 'librarian' && session.user.role !== 'admin')) {
     return { error: '権限がありません。' };
@@ -216,7 +182,7 @@ export async function refetchNdlCover(bookId: string): Promise<RefetchNdlCoverSt
   if (!isbn) return { error: '書籍のISBNが取得できません。' };
 
   const isbnNormalized = isbn.replace(/-/g, '');
-  const coverPath = await fetchAndSaveNdlCover(supabase, bookId, isbnNormalized);
+  const coverPath = await fetchAndSaveGoogleBooksCover(supabase, bookId, isbnNormalized);
   if (!coverPath) {
     revalidatePath(`/admin/books/${bookId}/edit`);
     revalidatePath(`/books/${bookId}`);

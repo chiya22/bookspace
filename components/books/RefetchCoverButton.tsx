@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { refetchNdlCover } from '@/lib/actions/books';
+import { refetchCover } from '@/lib/actions/books';
 
 type Props = {
   bookId: string;
 };
 
-export function RefetchNdlCoverButton({ bookId }: Props) {
+export function RefetchCoverButton({ bookId }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'info'; text: string } | null>(null);
@@ -16,14 +16,14 @@ export function RefetchNdlCoverButton({ bookId }: Props) {
   async function handleClick() {
     setLoading(true);
     setMessage(null);
-    const result = await refetchNdlCover(bookId);
+    const result = await refetchCover(bookId);
     setLoading(false);
     if (result.success) {
       router.refresh();
       return;
     }
     if (result.notFound) {
-      setMessage({ type: 'info', text: '国会図書館に書影が見つかりませんでした。' });
+      setMessage({ type: 'info', text: 'Google Books に表紙が見つかりませんでした。' });
       return;
     }
     setMessage({ type: 'error', text: result.error ?? '取得に失敗しました。' });
@@ -45,7 +45,7 @@ export function RefetchNdlCoverButton({ bookId }: Props) {
         ) : (
           <>
             <span aria-hidden>🔄</span>
-            国会図書館から画像を再取得
+            Google Books から表紙を再取得
           </>
         )}
       </button>

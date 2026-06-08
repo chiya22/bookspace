@@ -12,7 +12,6 @@ type Props = {
 
 /**
  * 表紙画像。src が null または読み込みに失敗した場合は「表紙なし」を表示。
- * 国会図書館の書影API（外部URL）をフォールバックで使う場合、404 時もこのコンポーネントで扱う。
  */
 export function CoverImage({ src, alt, className, width, height }: Props) {
   const [error, setError] = useState(false);
