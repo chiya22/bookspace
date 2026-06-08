@@ -1,6 +1,7 @@
 import { registerLoan } from '@/lib/actions/loans';
 import { LoanReturnForm } from '@/components/reception/LoanReturnForm';
 import { getSession } from '@/lib/auth';
+import { MAX_ACTIVE_LOANS_PER_USER } from '@/lib/loans/constants';
 import { getAllUsers } from '@/lib/users/queries';
 
 export const metadata = {
@@ -23,8 +24,8 @@ export default async function ReceptionLoanPage() {
     <div>
       <p className="text-sm text-zinc-600">
         {isAdmin
-          ? 'ISBNを入力し、利用者を選択して貸出を登録します。1人1冊までです。'
-          : 'ISBNと会員証QR（スキャン結果）を入力して貸出を登録します。1人1冊までです。'}
+          ? `ISBNを入力し、利用者を選択して貸出を登録します。1人${MAX_ACTIVE_LOANS_PER_USER}冊までです。`
+          : `ISBNと会員証QR（スキャン結果）を入力して貸出を登録します。1人${MAX_ACTIVE_LOANS_PER_USER}冊までです。`}
       </p>
       <div className="mt-6">
         <LoanReturnForm mode="loan" action={registerLoan} isAdmin={isAdmin} users={users} />
